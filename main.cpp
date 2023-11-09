@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.show();
     return a.exec();
+
     std::cout << "hi guys uwu i cant wait to get this done" << std::endl;
     std::cout << "BALLS IN MY THROATTTTTT" << std::endl;
 
