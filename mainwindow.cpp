@@ -28,6 +28,9 @@ MainWindow::MainWindow(QWidget *parent)
     menu->addAction("Rojo");
 
 
+    connect(ui->gridSizeSldr, &QSlider::valueChanged, this, &MainWindow::changeGridSize);
+
+
     //Pixmaps for our button Icons, (Currently using local images until we figure out Resource File.
     //QPixmap dmap("C:/Users/Samuel/Downloads/pen.png");
     //QPixmap emap("C:/Users/Samuel/Downloads/pen.png");
@@ -39,9 +42,6 @@ MainWindow::MainWindow(QWidget *parent)
     //ui->fill->setIcon(ButtonIcon);
     //ui->selection->setIcon(ButtonIcon);
 
-
-
-
 }
 
 MainWindow::~MainWindow()
@@ -49,3 +49,6 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::changeGridSize(){
+    ui->graphicsCanvas->gridSizeChanged(ui->gridSizeSldr->value());
+}

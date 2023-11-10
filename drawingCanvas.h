@@ -13,18 +13,15 @@ public:
 
 
 protected:
-    void mousePressEvent(QMouseEvent *event) override;
-    void mouseMoveEvent(QMouseEvent *event) override;
-    void mouseReleaseEvent(QMouseEvent *event) override;
-    void drawGrid(int width, int height);
-    QPointF snapToGrid(const QPointF& point);
+    void drawGrid(double gridDimension);
 
 private:
     QGraphicsScene *scene;
-    QPointF lastPoint;
-    int scaleFactor; // Adjust this based on your actual cell size
-    int gridCells;
-    bool drawing; // to check if we are currently drawing
+
+public slots:
+
+    void gridSizeChanged(int newSize);
+
 
 };
 

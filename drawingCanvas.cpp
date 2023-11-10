@@ -1,51 +1,32 @@
 #include "drawingCanvas.h"
 
-drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent), drawing(false) {
+drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
     scene = new QGraphicsScene(this);
 
-    gridCells = 20;
+    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-    scaleFactor =  500 / gridCells; // Adjust this based on your actual cell size
+    this->setFixedWidth(500);
+    this->setFixedHeight(500);
 
     this->setScene(scene);
 
-    scene->setSceneRect(0, 0, gridCells * scaleFactor, gridCells * scaleFactor);
+    this->invalidateScene();
 
-    drawGrid(this->width(), this->height());
+    double startGridDimension = 10;
+
+    scene->setSceneRect(0, 0, startGridDimension * 49, startGridDimension * 49);
+
+    this->setSceneRect(5, 5, scene->width(), scene->height());
+
+    drawGrid(startGridDimension);
     //Other initialization code
 }
 
-void drawingCanvas::mousePressEvent(QMouseEvent *event) {
-    if (event->button() == Qt::LeftButton) {
-        drawing = true;
-        // Snap to grid
-        QPointF snappedPoint = snapToGrid(mapToScene(event->pos()));
-        // Fill the cell
-        scene->addRect(QRectF(snappedPoint, QSize(scaleFactor, scaleFactor)), QPen(Qt::NoPen), QBrush(Qt::black));
-        lastPoint = snappedPoint;
-    }
-}
 
-void drawingCanvas::mouseMoveEvent(QMouseEvent *event) {
-    if (drawing && (event->buttons() & Qt::LeftButton)) {
-        // Snap to grid
-        QPointF snappedPoint = snapToGrid(mapToScene(event->pos()));
-        // Check if we moved to a new cell
-        if(snappedPoint != lastPoint) {
-            // Fill the new cell
-            scene->addRect(QRectF(snappedPoint, QSize(scaleFactor, scaleFactor)), QPen(Qt::NoPen), QBrush(Qt::black));
-            lastPoint = snappedPoint;
-        }
-    }
-}
+void drawingCanvas::drawGrid(double gridDimension) {
 
-void drawingCanvas::mouseReleaseEvent(QMouseEvent *event) {
-    if (event->button() == Qt::LeftButton && drawing) {
-        drawing = false;
-    }
-}
-
-void drawingCanvas::drawGrid(int width, int height) {
+    double scaleFactor = this->width() / gridDimension;
     // Clear the previous grid if needed
     scene->clear();
 
@@ -54,26 +35,13 @@ void drawingCanvas::drawGrid(int width, int height) {
     QBrush brush(Qt::black); // Brush to fill the cells
 
     // Loop over each cell in the grid and fill it
-    for (int x = 0; x < gridCells; x++) {
-        for (int y = 0; y < gridCells; y++) {
+    for (int x = 0; x <= gridDimension; x++) {
+        for (int y = 0; y <= gridDimension; y++) {
             scene->addRect(x * scaleFactor, y * scaleFactor, scaleFactor, scaleFactor, pen, brush);
         }
     }
-
-    // Draw grid lines on top of the filled cells
-    for (int x = 0; x <= gridCells; x++) {
-        scene->addLine(x * scaleFactor, 0, x * scaleFactor, height, pen);
-    }
-
-    for (int y = 0; y <= gridCells; y++) {
-        scene->addLine(0, y * scaleFactor, width, y * scaleFactor, pen);
-    }
 }
 
-
-// Helper function to snap a point to the nearest grid cell top-left corner
-QPointF drawingCanvas::snapToGrid(const QPointF& point) {
-    int x = static_cast<int>(point.x()) / scaleFactor * scaleFactor;
-    int y = static_cast<int>(point.y()) / scaleFactor * scaleFactor;
-    return QPointF(x, y);
+void drawingCanvas::gridSizeChanged(int newSize) {
+    drawGrid(newSize);
 }
