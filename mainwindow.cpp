@@ -32,15 +32,22 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     //Pixmaps for our button Icons, (Currently using local images until we figure out Resource File.
-    //QPixmap dmap("C:/Users/Samuel/Downloads/pen.png");
-    //QPixmap emap("C:/Users/Samuel/Downloads/pen.png");
-    //QPixmap fmap("C:/Users/Samuel/Downloads/pen.png");
-    //QPixmap smap("C:/Users/Samuel/Downloads/pen.png");
-    //QIcon ButtonIcon(dmap);
-    //ui->draw->setIcon(ButtonIcon);
-    //ui->erase->setIcon(ButtonIcon);
-    //ui->fill->setIcon(ButtonIcon);
-    //ui->selection->setIcon(ButtonIcon);
+    QPixmap penMap(":/pen.png");
+    QPixmap eraserMap(":/eraser.png");
+    QPixmap fillBucketMap(":/fillBucket.png");
+    QPixmap handMap(":/hand.png");
+
+    QIcon penIcon(penMap);
+    ui->draw->setIcon(penIcon);
+
+    QIcon eraserIcon(eraserMap);
+    ui->erase->setIcon(eraserIcon);
+
+    QIcon fillBucketIcon(fillBucketMap);
+    ui->fill->setIcon(fillBucketIcon);
+
+    QIcon handIcon(handMap);
+    ui->selection->setIcon(handIcon);
 
 }
 

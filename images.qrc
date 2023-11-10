@@ -1,3 +1,9 @@
 <RCC>
     <qresource prefix="/new/logos"/>
+    <qresource prefix="/">
+        <file>fillBucket.png</file>
+        <file>eraser.png</file>
+        <file>hand.png</file>
+        <file>pen.png</file>
+    </qresource>
 </RCC>
