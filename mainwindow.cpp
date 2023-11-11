@@ -51,6 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->erase, &QPushButton::clicked, this, &MainWindow::eraseButtonClicked);
     connect(ui->draw, &QPushButton::clicked, this, &MainWindow::drawButtonClicked);
+    connect(ui->colorBtn, &QPushButton::clicked, this, &MainWindow::colorButtonClicked);
 }
 
 MainWindow::~MainWindow()
@@ -71,5 +72,15 @@ void MainWindow::eraseButtonClicked() {
 void MainWindow::drawButtonClicked()
 {
     ui->graphicsCanvas->Eraserchange(false);
+}
+
+void MainWindow::colorButtonClicked()
+{
+    color = QColorDialog::getColor(Qt::white, this, "Choose Color");
+    if (color.isValid()) {
+        ui->graphicsCanvas->colorChange(color);
+        //yourPen.setColor(color);
+    }
+        // Update any necessary UI components or canvas
 }
 

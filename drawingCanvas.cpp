@@ -70,6 +70,11 @@ void drawingCanvas::Eraserchange(bool state) {
     eraseActive = state;
 }
 
+void drawingCanvas::colorChange(QColor color)
+{
+
+}
+
 // draw colors on the grids
 void drawingCanvas::drawOnGrid(const QPoint &position) {
     //find the view coordinate corresponding to the mouse location
@@ -79,7 +84,9 @@ void drawingCanvas::drawOnGrid(const QPoint &position) {
     QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
     if (currentGrid) {
         //change its color transparent or black based on if on erasing
+        //color = eraseActive ? Qt::transparent : Qt::black;
         QColor color = eraseActive ? Qt::transparent : Qt::black;
-        currentGrid->setBrush(QBrush(color));
+
+        currentGrid->setBrush(QBrush(Qt::black));
     }
 }

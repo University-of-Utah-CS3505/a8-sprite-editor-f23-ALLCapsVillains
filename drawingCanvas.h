@@ -11,6 +11,7 @@ class drawingCanvas : public QGraphicsView {
 public:
     explicit drawingCanvas(QWidget *parent = nullptr);
     void Eraserchange(bool state);
+    void colorChange(QColor color);
 
 
 protected:
@@ -25,6 +26,7 @@ private:
     bool drawActive;
     bool eraseActive;
     double gridDimension;
+    QColor color = Qt::black; // default color to black
 
 public slots:
 
