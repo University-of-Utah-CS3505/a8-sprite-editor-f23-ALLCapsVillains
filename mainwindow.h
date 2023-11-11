@@ -22,6 +22,8 @@ private:
 
 public slots:
     void eraseButtonClicked();
+private slots:
+    void drawButtonClicked();
 };
 
 #endif // MAINWINDOW_H

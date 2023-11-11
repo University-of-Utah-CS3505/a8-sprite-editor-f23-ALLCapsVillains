@@ -50,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->selection->setIcon(handIcon);
 
     connect(ui->erase, &QPushButton::clicked, this, &MainWindow::eraseButtonClicked);
-
+    connect(ui->draw, &QPushButton::clicked, this, &MainWindow::drawButtonClicked);
 }
 
 MainWindow::~MainWindow()
@@ -65,5 +65,11 @@ void MainWindow::changeGridSize(){
 void MainWindow::eraseButtonClicked() {
     //calling the Eraserchange method for change the earser's status.
     //Active to be not active, or reverse.
-    ui->graphicsCanvas->Eraserchange();
+    ui->graphicsCanvas->Eraserchange(true);
 }
+
+void MainWindow::drawButtonClicked()
+{
+    ui->graphicsCanvas->Eraserchange(false);
+}
+

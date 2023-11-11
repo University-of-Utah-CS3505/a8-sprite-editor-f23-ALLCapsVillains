@@ -10,7 +10,7 @@ class drawingCanvas : public QGraphicsView {
 
 public:
     explicit drawingCanvas(QWidget *parent = nullptr);
-    void Eraserchange();
+    void Eraserchange(bool state);
 
 
 protected:
