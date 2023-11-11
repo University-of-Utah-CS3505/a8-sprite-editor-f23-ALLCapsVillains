@@ -20,7 +20,6 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    QColor color;
 
 public slots:
     void eraseButtonClicked();

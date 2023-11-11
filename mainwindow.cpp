@@ -49,6 +49,8 @@ MainWindow::MainWindow(QWidget *parent)
     QIcon handIcon(handMap);
     ui->selection->setIcon(handIcon);
 
+    ui->colorBtn->setStyleSheet("background-color: black"); // default color to black
+
     connect(ui->erase, &QPushButton::clicked, this, &MainWindow::eraseButtonClicked);
     connect(ui->draw, &QPushButton::clicked, this, &MainWindow::drawButtonClicked);
     connect(ui->colorBtn, &QPushButton::clicked, this, &MainWindow::colorButtonClicked);
@@ -76,11 +78,12 @@ void MainWindow::drawButtonClicked()
 
 void MainWindow::colorButtonClicked()
 {
-    color = QColorDialog::getColor(Qt::white, this, "Choose Color");
-    if (color.isValid()) {
+    QColor color = QColorDialog::getColor(Qt::white, this, "Choose Color");
+    if (color.isValid())
+    {
         ui->graphicsCanvas->colorChange(color);
-        //yourPen.setColor(color);
+        QString buttonColor = QString("background-color: %1").arg(color.name());
+        ui->colorBtn->setStyleSheet(buttonColor);
     }
-        // Update any necessary UI components or canvas
 }
 

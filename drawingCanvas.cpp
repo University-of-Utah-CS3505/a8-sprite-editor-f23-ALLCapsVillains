@@ -70,9 +70,10 @@ void drawingCanvas::Eraserchange(bool state) {
     eraseActive = state;
 }
 
-void drawingCanvas::colorChange(QColor color)
+void drawingCanvas::colorChange(QColor newColor)
 {
-
+    colorPrev = newColor;
+    color = newColor;
 }
 
 // draw colors on the grids
@@ -84,9 +85,14 @@ void drawingCanvas::drawOnGrid(const QPoint &position) {
     QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
     if (currentGrid) {
         //change its color transparent or black based on if on erasing
-        //color = eraseActive ? Qt::transparent : Qt::black;
-        QColor color = eraseActive ? Qt::transparent : Qt::black;
-
-        currentGrid->setBrush(QBrush(Qt::black));
+        if (eraseActive)
+        {
+            color = Qt::transparent;
+        }
+        else
+        {
+            color = colorPrev;
+        }
+        currentGrid->setBrush(QBrush(color));
     }
 }
