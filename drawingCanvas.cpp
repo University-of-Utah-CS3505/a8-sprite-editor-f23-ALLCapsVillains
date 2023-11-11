@@ -33,7 +33,7 @@ void drawingCanvas::drawGrid(double gridDimension) {
 
     QPen pen(Qt::gray);
     pen.setWidth(0);
-    QBrush brush(Qt::white);
+    QBrush brush(Qt::transparent);
 
     //filling all grids
     for (int x = 0; x <= gridDimension; x++) {
@@ -65,9 +65,9 @@ void drawingCanvas::mouseReleaseEvent(QMouseEvent *event) {
     drawActive = false;
 }
 
-void drawingCanvas::Eraserchange() {
+void drawingCanvas::Eraserchange(bool state) {
     //change the erase active status, when click the erase button
-    eraseActive = !eraseActive;
+    eraseActive = state;
 }
 
 // draw colors on the grids
@@ -78,8 +78,8 @@ void drawingCanvas::drawOnGrid(const QPoint &position) {
     //find the current the grid we chosed and change its color
     QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
     if (currentGrid) {
-        //change its color white or black based on if on erasing
-        QColor color = eraseActive ? Qt::white : Qt::black;
+        //change its color transparent or black based on if on erasing
+        QColor color = eraseActive ? Qt::transparent : Qt::black;
         currentGrid->setBrush(QBrush(color));
     }
 }
