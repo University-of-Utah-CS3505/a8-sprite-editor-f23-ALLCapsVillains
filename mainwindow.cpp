@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <drawingCanvas.h>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -27,19 +28,28 @@ MainWindow::MainWindow(QWidget *parent)
     menu->addAction("Rojo");
 
 
+    connect(ui->gridSizeSldr, &QSlider::valueChanged, this, &MainWindow::changeGridSize);
+
+
     //Pixmaps for our button Icons, (Currently using local images until we figure out Resource File.
-    //QPixmap dmap("C:/Users/Samuel/Downloads/pen.png");
-    //QPixmap emap("C:/Users/Samuel/Downloads/pen.png");
-    //QPixmap fmap("C:/Users/Samuel/Downloads/pen.png");
-    //QPixmap smap("C:/Users/Samuel/Downloads/pen.png");
-    //QIcon ButtonIcon(dmap);
-    //ui->draw->setIcon(ButtonIcon);
-    //ui->erase->setIcon(ButtonIcon);
-    //ui->fill->setIcon(ButtonIcon);
-    //ui->selection->setIcon(ButtonIcon);
+    QPixmap penMap(":/pen.png");
+    QPixmap eraserMap(":/eraser.png");
+    QPixmap fillBucketMap(":/fillBucket.png");
+    QPixmap handMap(":/hand.png");
 
+    QIcon penIcon(penMap);
+    ui->draw->setIcon(penIcon);
 
+    QIcon eraserIcon(eraserMap);
+    ui->erase->setIcon(eraserIcon);
 
+    QIcon fillBucketIcon(fillBucketMap);
+    ui->fill->setIcon(fillBucketIcon);
+
+    QIcon handIcon(handMap);
+    ui->selection->setIcon(handIcon);
+
+    connect(ui->erase, &QPushButton::clicked, this, &MainWindow::eraseButtonClicked);
 
 }
 
@@ -48,3 +58,12 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::changeGridSize(){
+    ui->graphicsCanvas->gridSizeChanged(ui->gridSizeSldr->value());
+}
+
+void MainWindow::eraseButtonClicked() {
+    //calling the Eraserchange method for change the earser's status.
+    //Active to be not active, or reverse.
+    ui->graphicsCanvas->Eraserchange();
+}

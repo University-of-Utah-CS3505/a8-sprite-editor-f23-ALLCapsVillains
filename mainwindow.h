@@ -15,7 +15,13 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void changeGridSize();
+
 private:
     Ui::MainWindow *ui;
+
+public slots:
+    void eraseButtonClicked();
 };
+
 #endif // MAINWINDOW_H
