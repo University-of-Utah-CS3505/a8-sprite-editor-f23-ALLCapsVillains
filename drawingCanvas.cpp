@@ -1,4 +1,5 @@
 #include "drawingCanvas.h"
+#include <QGraphicsItem>
 
 drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
     scene = new QGraphicsScene(this);
@@ -27,14 +28,14 @@ drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
 void drawingCanvas::drawGrid(double gridDimension) {
 
     double scaleFactor = this->width() / gridDimension;
-    // Clear the previous grid if needed
+    // Clear the old grids
     scene->clear();
 
     QPen pen(Qt::gray);
-    pen.setWidth(0); // Set pen width to 0 to draw lines one pixel wide
-    QBrush brush(Qt::black); // Brush to fill the cells
+    pen.setWidth(0);
+    QBrush brush(Qt::white);
 
-    // Loop over each cell in the grid and fill it
+    //filling all grids
     for (int x = 0; x <= gridDimension; x++) {
         for (int y = 0; y <= gridDimension; y++) {
             scene->addRect(x * scaleFactor, y * scaleFactor, scaleFactor, scaleFactor, pen, brush);
@@ -44,4 +45,41 @@ void drawingCanvas::drawGrid(double gridDimension) {
 
 void drawingCanvas::gridSizeChanged(int newSize) {
     drawGrid(newSize);
+}
+
+// mouse clic
+void drawingCanvas::mousePressEvent(QMouseEvent *event) {
+    drawActive = true;
+    drawOnGrid(event->pos());
+}
+
+// mouse drag
+void drawingCanvas::mouseMoveEvent(QMouseEvent *event) {
+    if (drawActive) {
+        drawOnGrid(event->pos());
+    }
+}
+
+// mouse release
+void drawingCanvas::mouseReleaseEvent(QMouseEvent *event) {
+    drawActive = false;
+}
+
+void drawingCanvas::Eraserchange() {
+    //change the erase active status, when click the erase button
+    eraseActive = !eraseActive;
+}
+
+// draw colors on the grids
+void drawingCanvas::drawOnGrid(const QPoint &position) {
+    //find the view coordinate corresponding to the mouse location
+    QPointF scenePoint = mapToScene(position);
+
+    //find the current the grid we chosed and change its color
+    QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
+    if (currentGrid) {
+        //change its color white or black based on if on erasing
+        QColor color = eraseActive ? Qt::white : Qt::black;
+        currentGrid->setBrush(QBrush(color));
+    }
 }

@@ -19,5 +19,9 @@ public:
 
 private:
     Ui::MainWindow *ui;
+
+public slots:
+    void eraseButtonClicked();
 };
+
 #endif // MAINWINDOW_H
