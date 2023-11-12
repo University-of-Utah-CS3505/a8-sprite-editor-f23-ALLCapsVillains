@@ -25,6 +25,7 @@ public slots:
     void eraseButtonClicked();
 private slots:
     void drawButtonClicked();
+    void fillButtonClicked();
     void colorButtonClicked();
 };
 

@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <drawingCanvas.h>
+#include<QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -53,6 +54,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->erase, &QPushButton::clicked, this, &MainWindow::eraseButtonClicked);
     connect(ui->draw, &QPushButton::clicked, this, &MainWindow::drawButtonClicked);
+    connect(ui->fill, &QPushButton::clicked, this, &MainWindow::fillButtonClicked);
     connect(ui->colorBtn, &QPushButton::clicked, this, &MainWindow::colorButtonClicked);
 }
 
@@ -68,12 +70,22 @@ void MainWindow::changeGridSize(){
 void MainWindow::eraseButtonClicked() {
     //calling the Eraserchange method for change the earser's status.
     //Active to be not active, or reverse.
+    ui->graphicsCanvas->drawingMode(true);
+    ui->graphicsCanvas->fillMode(false);
     ui->graphicsCanvas->Eraserchange(true);
 }
 
 void MainWindow::drawButtonClicked()
 {
+    ui->graphicsCanvas->drawingMode(true);
+    ui->graphicsCanvas->fillMode(false);
     ui->graphicsCanvas->Eraserchange(false);
+}
+
+void MainWindow::fillButtonClicked()
+{
+    ui->graphicsCanvas->drawingMode(false);
+    ui->graphicsCanvas->fillMode(true);
 }
 
 void MainWindow::colorButtonClicked()
@@ -82,6 +94,8 @@ void MainWindow::colorButtonClicked()
     if (color.isValid())
     {
         ui->graphicsCanvas->colorChange(color);
+
+        // Change the icon to selected color
         QString buttonColor = QString("background-color: %1").arg(color.name());
         ui->colorBtn->setStyleSheet(buttonColor);
     }

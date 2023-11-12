@@ -1,6 +1,8 @@
 #include "drawingCanvas.h"
 #include <QGraphicsItem>
 
+#include<QDebug>
+
 drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
     scene = new QGraphicsScene(this);
 
@@ -27,7 +29,8 @@ drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
 
 void drawingCanvas::drawGrid(double gridDimension) {
 
-    double scaleFactor = this->width() / gridDimension;
+    scaleFactor = this->width() / gridDimension;
+    qDebug()<<scaleFactor;
     // Clear the old grids
     scene->clear();
 
@@ -50,13 +53,26 @@ void drawingCanvas::gridSizeChanged(int newSize) {
 // mouse clic
 void drawingCanvas::mousePressEvent(QMouseEvent *event) {
     drawActive = true;
-    drawOnGrid(event->pos());
+    if (drawMode)
+    {
+        drawOnGrid(event->pos());
+    }
+
+    if (fillActive)
+    {
+        fillBucket(event->pos());
+    }
 }
 
 // mouse drag
 void drawingCanvas::mouseMoveEvent(QMouseEvent *event) {
-    if (drawActive) {
+    if (drawActive && drawMode) {
         drawOnGrid(event->pos());
+        qDebug()<<"draw";
+    }
+    if (drawActive && fillActive)
+    {
+        fillBucket(event->pos());
     }
 }
 
@@ -70,6 +86,16 @@ void drawingCanvas::Eraserchange(bool state) {
     eraseActive = state;
 }
 
+void drawingCanvas::drawingMode(bool state) {
+    //change the erase active status, when click the erase button
+    drawMode = state;
+}
+
+void drawingCanvas::fillMode(bool state) {
+    //change the erase active status, when click the erase button
+    fillActive = state;
+}
+
 void drawingCanvas::colorChange(QColor newColor)
 {
     colorPrev = newColor;
@@ -80,6 +106,7 @@ void drawingCanvas::colorChange(QColor newColor)
 void drawingCanvas::drawOnGrid(const QPoint &position) {
     //find the view coordinate corresponding to the mouse location
     QPointF scenePoint = mapToScene(position);
+    //qDebug()<<position;
 
     //find the current the grid we chosed and change its color
     QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
@@ -95,4 +122,28 @@ void drawingCanvas::drawOnGrid(const QPoint &position) {
         }
         currentGrid->setBrush(QBrush(color));
     }
+}
+
+void drawingCanvas::fillBucket(const QPoint &position)
+{
+//    if (x < 0 || x >= image.width() || y < 0 || y >= image.height())
+//        return;
+//    if (image.pixelColor(x, y) != oldColor)
+//        return;
+    QPointF scenePoint = mapToScene(position);
+    QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
+    qDebug()<<currentGrid.item
+    if (currentGrid)
+    {
+        currentGrid->setBrush(QBrush(color));
+    }
+
+    scenePoint.setX(scenePoint.x() + scaleFactor);
+    QGraphicsRectItem *currentGriddy = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
+    currentGriddy->setBrush(QBrush(color));
+
+//    fillBucket(image, x + 1, y, oldColor, newColor);
+//    fillBucket(image, x - 1, y, oldColor, newColor);
+//    fillBucket(image, x, y + 1, oldColor, newColor);
+//    fillBucket(image, x, y - 1, oldColor, newColor);
 }

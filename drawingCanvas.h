@@ -13,6 +13,9 @@ public:
     void Eraserchange(bool state);
     void colorChange(QColor newColor);
 
+    void drawingMode(bool state);
+    void fillMode(bool state);
+
 
 protected:
     void drawGrid(double gridDimension);
@@ -20,14 +23,18 @@ protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
     void drawOnGrid(const QPoint &position);
+    void fillBucket(const QPoint &position);
 
 private:
     QGraphicsScene *scene;
     bool drawActive;
     bool eraseActive;
+    bool drawMode;
+    bool fillActive;
     double gridDimension;
     QColor color = Qt::black; // default color to black
     QColor colorPrev = Qt::black; // Saves the previous color to go back to
+    double scaleFactor;
 
 public slots:
 
