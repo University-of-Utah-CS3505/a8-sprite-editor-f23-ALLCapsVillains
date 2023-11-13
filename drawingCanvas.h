@@ -39,6 +39,8 @@ private:
     QPointF lastMousePosition;
     QPointF delta;
     double currentGridDimension;
+    QColor colorStore;
+    bool colorCheck = false;
 
     double gridDimension;
     QColor color = Qt::black; // default color to black

@@ -95,7 +95,18 @@ void drawingCanvas::mouseMoveEvent(QMouseEvent *event) {
             qDebug()<<"last mouse: "<<lastMousePosition;
             qDebug()<<"current mouse: "<<mapToScene(event->pos());
             qDebug()<<"change: "<<delta;
-            //lastMousePosition = mapToScene(event->pos());
+            movePixels(delta);
+            lastMousePosition = mapToScene(event->pos());
+
+//            for (int x = 0; x <= currentGridDimension; x++) {
+//                for (int y = 0; y <= currentGridDimension; y++) {
+//                    QPointF gridPoint;
+//                    gridPoint.setX(x * scaleFactor);
+//                    gridPoint.setY(y * scaleFactor);
+//                    QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(gridPoint, QTransform()));
+//                    currentGrid->setBrush(QBrush(Qt::transparent));
+//                }
+//            }
         }
     }
 }
@@ -106,7 +117,6 @@ void drawingCanvas::mouseReleaseEvent(QMouseEvent *event) {
     if (moving)
     {
         moving = false;
-        movePixels(delta);
     }
 }
 
@@ -202,17 +212,33 @@ void drawingCanvas::movePixels(QPointF delta)
             coor.setY(y * scaleFactor);
             QPointF change = coor + delta;
             QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(coor, QTransform()));
-            if (change.x() >= scaleFactor || change.y() >= scaleFactor)
+            QGraphicsRectItem *movedGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(change, QTransform()));
+
+            if (colorCheck)
             {
-                QGraphicsRectItem *movedGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(change, QTransform()));
+                colorCheck = false;
                 if (change.x() < 0 || change.x() >= 500 || change.y() < 0 || change.y() >= 500)
                 {
 
                 }
                 else
                 {
-                    movedGrid->setBrush(currentGrid->brush().color());
+                    movedGrid->setBrush(QBrush(colorStore));
                 }
+
+            }
+            if (movedGrid->brush().color() != Qt::transparent)
+            {
+                colorStore = movedGrid->brush().color();
+                colorCheck = true;
+            }
+            if (change.x() < 0 || change.x() >= 500 || change.y() < 0 || change.y() >= 500)
+            {
+
+            }
+            else
+            {
+                movedGrid->setBrush(QBrush(currentGrid->brush().color()));
             }
         }
     }
