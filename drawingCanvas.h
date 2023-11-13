@@ -4,6 +4,7 @@
 #include <QGraphicsView>
 #include <QMouseEvent>
 #include <QGraphicsScene>
+#include <QMap>
 
 class drawingCanvas : public QGraphicsView {
     Q_OBJECT
@@ -39,8 +40,11 @@ private:
     QPointF lastMousePosition;
     QPointF delta;
     double currentGridDimension;
-    QColor colorStore;
-    bool colorCheck = false;
+
+    std::map<int, QColor> allSquares; // Map from square ID to color
+    std::map<int, QGraphicsRectItem*> squareItems; // Map from square ID to QGraphicsRectItem
+    int nextSquareId = 0; // Increment this for each new square
+    void updateGridDisplay();
 
     double gridDimension;
     QColor color = Qt::black; // default color to black

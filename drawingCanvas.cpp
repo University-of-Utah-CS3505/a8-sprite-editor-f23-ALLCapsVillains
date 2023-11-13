@@ -2,6 +2,7 @@
 #include <QGraphicsItem>
 
 #include<QDebug>
+#include <iostream>
 
 drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
     scene = new QGraphicsScene(this);
@@ -35,6 +36,8 @@ void drawingCanvas::drawGrid(double gridDimension) {
 
     // Clear the old grids
     scene->clear();
+    allSquares.clear();
+    squareItems.clear();
 
     QPen pen(Qt::gray);
     pen.setWidth(0);
@@ -44,8 +47,13 @@ void drawingCanvas::drawGrid(double gridDimension) {
     for (int x = 0; x <= gridDimension; x++) {
         for (int y = 0; y <= gridDimension; y++) {
             scene->addRect(x * scaleFactor, y * scaleFactor, scaleFactor, scaleFactor, pen, brush);
+            QGraphicsRectItem* rect = scene->addRect(x * scaleFactor, y * scaleFactor, scaleFactor, scaleFactor, pen, brush);
+            int squareId = nextSquareId++;
+            squareItems[squareId] = rect;
+            allSquares[squareId] = Qt::transparent;
         }
     }
+    nextSquareId = 0;
 }
 
 void drawingCanvas::gridSizeChanged(int newSize) {
@@ -92,21 +100,8 @@ void drawingCanvas::mouseMoveEvent(QMouseEvent *event) {
         if (moving)
         {
             delta = mapToScene(event->pos()) - lastMousePosition;
-            qDebug()<<"last mouse: "<<lastMousePosition;
-            qDebug()<<"current mouse: "<<mapToScene(event->pos());
-            qDebug()<<"change: "<<delta;
             movePixels(delta);
             lastMousePosition = mapToScene(event->pos());
-
-//            for (int x = 0; x <= currentGridDimension; x++) {
-//                for (int y = 0; y <= currentGridDimension; y++) {
-//                    QPointF gridPoint;
-//                    gridPoint.setX(x * scaleFactor);
-//                    gridPoint.setY(y * scaleFactor);
-//                    QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(gridPoint, QTransform()));
-//                    currentGrid->setBrush(QBrush(Qt::transparent));
-//                }
-//            }
         }
     }
 }
@@ -165,6 +160,14 @@ void drawingCanvas::drawOnGrid(const QPoint &position) {
             color = colorPrev;
         }
         currentGrid->setBrush(QBrush(color));
+
+        int squareId = nextSquareId++;
+        squareItems[squareId] = currentGrid;
+        allSquares[squareId] = color;
+
+        qDebug()<<currentGrid->sceneBoundingRect().center();
+        qDebug()<<position;
+        qDebug()<<scenePoint;
     }
 }
 
@@ -189,6 +192,7 @@ void drawingCanvas::fillBucket(QPointF scenePoint, int scaleX, int scaleY)
     if (currentGrid)
     {
         currentGrid->setBrush(QBrush(colorPrev));
+        allSquares[currentGrid] = colorPrev;
     }
 
     // Flood fill algorithm to recurse on all sides
@@ -200,46 +204,25 @@ void drawingCanvas::fillBucket(QPointF scenePoint, int scaleX, int scaleY)
 
 void drawingCanvas::movePixels(QPointF delta)
 {
-//    for (int x = 0; x <= gridDimension; x++) {
-//        for (int y = 0; y <= gridDimension; y++) {
-//            scene->addRect(x * scaleFactor, y * scaleFactor, scaleFactor, scaleFactor, pen, brush);
-//        }
-//    }
-    for (int x = 0; x <= currentGridDimension; x++) {
-        for (int y = 0; y <= currentGridDimension; y++) {
-            QPointF coor;
-            coor.setX(x * scaleFactor);
-            coor.setY(y * scaleFactor);
-            QPointF change = coor + delta;
-            QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(coor, QTransform()));
-            QGraphicsRectItem *movedGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(change, QTransform()));
+    std::map<QGraphicsRectItem*, QColor>newGridColors;
+    for (const auto &item : allSquares) {
+        QPointF origin = item.first->sceneBoundingRect().center();
+        QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(origin + delta, QTransform()));
+        newGridColors[currentGrid] = item.second;
+    }
+    allSquares = newGridColors;
+    updateGridDisplay();
+}
 
-            if (colorCheck)
-            {
-                colorCheck = false;
-                if (change.x() < 0 || change.x() >= 500 || change.y() < 0 || change.y() >= 500)
-                {
-
-                }
-                else
-                {
-                    movedGrid->setBrush(QBrush(colorStore));
-                }
-
-            }
-            if (movedGrid->brush().color() != Qt::transparent)
-            {
-                colorStore = movedGrid->brush().color();
-                colorCheck = true;
-            }
-            if (change.x() < 0 || change.x() >= 500 || change.y() < 0 || change.y() >= 500)
-            {
-
-            }
-            else
-            {
-                movedGrid->setBrush(QBrush(currentGrid->brush().color()));
-            }
+void drawingCanvas::updateGridDisplay()
+{
+    foreach (QGraphicsItem *item, scene->items()) {
+        QGraphicsRectItem *rect = qgraphicsitem_cast<QGraphicsRectItem*>(item);
+        if (rect) {
+            QPointF gridPosition = rect->sceneBoundingRect().center();
+            QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(gridPosition, QTransform()));
+            QColor color = allSquares[currentGrid];
+            rect->setBrush(QBrush(color));
         }
     }
 }
