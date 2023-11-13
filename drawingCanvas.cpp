@@ -30,7 +30,6 @@ drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
 void drawingCanvas::drawGrid(double gridDimension) {
 
     scaleFactor = this->width() / gridDimension;
-    qDebug()<<scaleFactor;
     // Clear the old grids
     scene->clear();
 
