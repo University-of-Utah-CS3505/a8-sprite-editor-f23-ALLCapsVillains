@@ -12,10 +12,11 @@ public:
     explicit drawingCanvas(QWidget *parent = nullptr);
     void Eraserchange(bool state);
     void colorChange(QColor newColor);
-
     void drawingMode(bool state);
     void fillMode(bool state);
 
+    //getting the drawing area scene for copy
+    QGraphicsScene* getScene() const;
 
 protected:
     void drawGrid(double gridDimension);
@@ -40,7 +41,9 @@ public slots:
 
     void gridSizeChanged(int newSize);
 
-
+signals:
+    //for expressing draw has been finished
+    void drawingFinish();
 };
 
 #endif // DRAWINGCANVAS_H

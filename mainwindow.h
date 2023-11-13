@@ -17,6 +17,7 @@ public:
     ~MainWindow();
 
     void changeGridSize();
+    void previewWindowUpdate();
 
 private:
     Ui::MainWindow *ui;

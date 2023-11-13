@@ -79,6 +79,7 @@ void drawingCanvas::mouseMoveEvent(QMouseEvent *event) {
 // mouse release
 void drawingCanvas::mouseReleaseEvent(QMouseEvent *event) {
     drawActive = false;
+    emit drawingFinish();
 }
 
 void drawingCanvas::Eraserchange(bool state) {
@@ -152,4 +153,8 @@ void drawingCanvas::fillBucket(QPointF scenePoint, int scaleX, int scaleY)
     fillBucket(scenePoint, -scaleFactor, 0);
     fillBucket(scenePoint, 0, scaleFactor);
     fillBucket(scenePoint, 0, -scaleFactor);
+}
+//getting the drawing area scene for copying to preview window
+QGraphicsScene* drawingCanvas::getScene() const {
+    return scene;
 }

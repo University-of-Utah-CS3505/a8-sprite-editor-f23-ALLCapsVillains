@@ -56,6 +56,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->draw, &QPushButton::clicked, this, &MainWindow::drawButtonClicked);
     connect(ui->fill, &QPushButton::clicked, this, &MainWindow::fillButtonClicked);
     connect(ui->colorBtn, &QPushButton::clicked, this, &MainWindow::colorButtonClicked);
+    //when the drawing is finished, the preview window will show the scene
+    connect(ui->graphicsCanvas, &drawingCanvas::drawingFinish, this, &MainWindow::previewWindowUpdate);
 }
 
 MainWindow::~MainWindow()
@@ -98,6 +100,51 @@ void MainWindow::colorButtonClicked()
         // Change the icon to selected color
         QString buttonColor = QString("background-color: %1").arg(color.name());
         ui->colorBtn->setStyleSheet(buttonColor);
+    }
+}
+
+void MainWindow::previewWindowUpdate() {
+    //check if drawing and preview window are valid
+    if (ui->graphicsCanvas && ui->previewWindow && ui->frame) {
+        // Capture contents and the rectangle boundaries of the drawing canvas
+        QGraphicsScene* drawingScene = ui->graphicsCanvas->getScene();
+        QRectF sceneRectBound = drawingScene->sceneRect();
+
+        //drawing the drawing scene onto the pixmap for using
+        QPixmap pixmap(sceneRectBound.size().toSize());
+        QPainter painter(&pixmap);
+        //make all white to clean all grid first
+        painter.fillRect(pixmap.rect(), Qt::white);
+        drawingScene->render(&painter, QRectF(), sceneRectBound);
+
+        // smaller the pixmap to fit the preview window size
+        QPixmap previewPixmap = pixmap.scaled(ui->previewWindow->viewport()->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        QGraphicsScene *previewScene = ui->previewWindow->scene();
+
+        QPixmap framePixmap = pixmap.scaled(ui->frame->viewport()->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        QGraphicsScene *frameScene = ui->frame->scene();
+
+        //check if the preview window's scene has been set or not
+        if (!previewScene) {
+            previewScene = new QGraphicsScene(ui->previewWindow);
+            ui->previewWindow->setScene(previewScene);
+        }
+
+        if (!frameScene) {
+            frameScene = new QGraphicsScene(ui->frame);
+            ui->frame->setScene(frameScene);
+        }
+        //clear it for repopulating it with a new pixmap
+        previewScene->clear();
+        frameScene->clear();
+
+        // Adding the scaled pixmap to the preview window scene
+        frameScene->addPixmap(framePixmap);
+        previewScene->addPixmap(framePixmap);
+
+        // Fiting to the preview window
+        ui->previewWindow->fitInView(previewScene->itemsBoundingRect(), Qt::KeepAspectRatio);
+        ui->frame->fitInView(frameScene->itemsBoundingRect(), Qt::KeepAspectRatio);
     }
 }
 
