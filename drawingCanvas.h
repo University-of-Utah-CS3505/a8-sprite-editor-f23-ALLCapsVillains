@@ -23,7 +23,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
     void drawOnGrid(const QPoint &position);
-    void fillBucket(const QPoint &position);
+    void fillBucket(const QPointF, int scaleX, int scaleY);
 
 private:
     QGraphicsScene *scene;

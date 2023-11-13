@@ -60,7 +60,8 @@ void drawingCanvas::mousePressEvent(QMouseEvent *event) {
 
     if (fillActive)
     {
-        fillBucket(event->pos());
+        QPointF fillPoint = mapToScene(event->pos());
+        fillBucket(fillPoint, 0, 0);
     }
 }
 
@@ -68,11 +69,11 @@ void drawingCanvas::mousePressEvent(QMouseEvent *event) {
 void drawingCanvas::mouseMoveEvent(QMouseEvent *event) {
     if (drawActive && drawMode) {
         drawOnGrid(event->pos());
-        qDebug()<<"draw";
     }
     if (drawActive && fillActive)
     {
-        fillBucket(event->pos());
+        QPointF fillPoint = mapToScene(event->pos());
+        fillBucket(fillPoint, 0, 0);
     }
 }
 
@@ -106,44 +107,50 @@ void drawingCanvas::colorChange(QColor newColor)
 void drawingCanvas::drawOnGrid(const QPoint &position) {
     //find the view coordinate corresponding to the mouse location
     QPointF scenePoint = mapToScene(position);
-    //qDebug()<<position;
 
     //find the current the grid we chosed and change its color
     QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
     if (currentGrid) {
-        //change its color transparent or black based on if on erasing
+        //change its color transparent or previous color based on if erase is active
         if (eraseActive)
         {
             color = Qt::transparent;
         }
         else
         {
+            // Go back to the color selected by the user before they selected erase button
             color = colorPrev;
         }
         currentGrid->setBrush(QBrush(color));
     }
 }
 
-void drawingCanvas::fillBucket(const QPoint &position)
+void drawingCanvas::fillBucket(QPointF scenePoint, int scaleX, int scaleY)
 {
-//    if (x < 0 || x >= image.width() || y < 0 || y >= image.height())
-//        return;
-//    if (image.pixelColor(x, y) != oldColor)
-//        return;
-    QPointF scenePoint = mapToScene(position);
+    // Select the square above/below or left/right to check and then fill if passes the checks
+    scenePoint.setX(scenePoint.x() + scaleX);
+    scenePoint.setY(scenePoint.y() + scaleY);
     QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
-    qDebug()<<currentGrid.item
-    if (currentGrid)
+
+    // If the cooridnates are out of range of the graphics canvas, return
+    if (scenePoint.x() < 0 || scenePoint.x() >= 500 || scenePoint.y() < 0 || scenePoint.y() >= 500)
+        return;
+
+    // If you reach a color that matches the selected color, return
+    if (currentGrid->brush().color() != Qt::transparent)
     {
-        currentGrid->setBrush(QBrush(color));
+        return;
     }
 
-    scenePoint.setX(scenePoint.x() + scaleFactor);
-    QGraphicsRectItem *currentGriddy = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
-    currentGriddy->setBrush(QBrush(color));
+    // Set the space of the grid to the color
+    if (currentGrid)
+    {
+        currentGrid->setBrush(QBrush(colorPrev));
+    }
 
-//    fillBucket(image, x + 1, y, oldColor, newColor);
-//    fillBucket(image, x - 1, y, oldColor, newColor);
-//    fillBucket(image, x, y + 1, oldColor, newColor);
-//    fillBucket(image, x, y - 1, oldColor, newColor);
+    // Flood fill algorithm to recurse on all sides
+    fillBucket(scenePoint, scaleFactor, 0);
+    fillBucket(scenePoint, -scaleFactor, 0);
+    fillBucket(scenePoint, 0, scaleFactor);
+    fillBucket(scenePoint, 0, -scaleFactor);
 }
