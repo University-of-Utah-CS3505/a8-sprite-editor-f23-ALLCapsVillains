@@ -1,5 +1,9 @@
 #include "drawingCanvas.h"
 #include <QGraphicsItem>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QFile>
 
 #include<QDebug>
 
@@ -16,18 +20,18 @@ drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
 
     this->invalidateScene();
 
-    double startGridDimension = 10;
+    gridDimension = 10;
 
-    scene->setSceneRect(0, 0, startGridDimension * 49, startGridDimension * 49);
+    scene->setSceneRect(0, 0, gridDimension * 49, gridDimension * 49);
 
     this->setSceneRect(5, 5, scene->width(), scene->height());
 
-    drawGrid(startGridDimension);
+    drawGrid();
     //Other initialization code
 }
 
 
-void drawingCanvas::drawGrid(double gridDimension) {
+void drawingCanvas::drawGrid() {
 
     scaleFactor = this->width() / gridDimension;
     // Clear the old grids
@@ -46,7 +50,8 @@ void drawingCanvas::drawGrid(double gridDimension) {
 }
 
 void drawingCanvas::gridSizeChanged(int newSize) {
-    drawGrid(newSize);
+    gridDimension = newSize;
+    drawGrid();
 }
 
 // mouse clic
@@ -99,7 +104,7 @@ void drawingCanvas::fillMode(bool state) {
 void drawingCanvas::colorChange(QColor newColor)
 {
     colorPrev = newColor;
-    color = newColor;
+    localColor = newColor;
 }
 
 // draw colors on the grids
@@ -113,14 +118,14 @@ void drawingCanvas::drawOnGrid(const QPoint &position) {
         //change its color transparent or previous color based on if erase is active
         if (eraseActive)
         {
-            color = Qt::transparent;
+            localColor = Qt::transparent;
         }
         else
         {
             // Go back to the color selected by the user before they selected erase button
-            color = colorPrev;
+            localColor = colorPrev;
         }
-        currentGrid->setBrush(QBrush(color));
+        currentGrid->setBrush(QBrush(localColor));
     }
 }
 
@@ -152,4 +157,69 @@ void drawingCanvas::fillBucket(QPointF scenePoint, int scaleX, int scaleY)
     fillBucket(scenePoint, -scaleFactor, 0);
     fillBucket(scenePoint, 0, scaleFactor);
     fillBucket(scenePoint, 0, -scaleFactor);
+}
+
+void drawingCanvas::saveDrawing(const QString &filePath) {
+    QJsonArray jsonArray;
+
+    scaleFactor = this->width() / gridDimension;
+
+    //Get every pixel color
+    for (int x = 0; x < gridDimension; x++) {
+        QJsonArray rowArray;
+        for (int y = 0; y < gridDimension; y++) {
+            QPointF scenePoint = mapToScene(QPoint(x * scaleFactor + scaleFactor / 2, y * scaleFactor + scaleFactor / 2));
+            QGraphicsRectItem *item = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
+
+            QColor color = item ? item->brush().color() : Qt::transparent;
+            QString colorStr = color.name(QColor::HexArgb);
+            rowArray.append(colorStr);
+        }
+        jsonArray.append(rowArray);
+    }
+
+    //Name it
+    QJsonObject jsonObject;
+    jsonObject["grid"] = jsonArray;
+
+    //Save it to the chose file
+    QFile file(filePath);
+    if (file.open(QIODevice::WriteOnly)) {
+        QJsonDocument doc(jsonObject);
+        file.write(doc.toJson());
+        file.close();
+    }
+}
+
+void drawingCanvas::loadDrawing(const QString &filePath) {
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        return;
+    }
+
+    QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    QJsonObject jsonObject = doc.object();
+    QJsonArray gridArray = jsonObject["grid"].toArray();
+
+    scaleFactor = this->width() / gridDimension;
+
+    //Read every grid
+    for (int x = 0; x < gridArray.size(); ++x) {
+        QJsonArray rowArray = gridArray[x].toArray();
+        for (int y = 0; y < rowArray.size(); ++y) {
+            QColor color(rowArray[y].toString());
+            QPointF scenePoint = mapToScene(QPoint(x * scaleFactor, y * scaleFactor));
+            QGraphicsRectItem *item = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
+
+            if (item) {
+                item->setBrush(QBrush(color));
+            } else {
+                QPen pen(Qt::gray);
+                pen.setWidth(0);
+                scene->addRect(x * scaleFactor, y * scaleFactor, scaleFactor, scaleFactor, pen, QBrush(color));
+            }
+        }
+    }
+
+    file.close();
 }

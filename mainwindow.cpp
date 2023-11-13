@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include <drawingCanvas.h>
 #include<QDebug>
+#include <QFileDialog>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -10,9 +11,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     QMenu * menu = menuBar()->addMenu("File");
 
-    menu->addAction("Save");
+    QAction *saveAction = menu->addAction("Save");
     menu->addAction("Save As");
-    menu->addAction("Load");
+    QAction *loadAction = menu->addAction("Load");
 
     menu=menuBar()->addMenu("Presets");
     menu->addAction("Insert Preset 1");
@@ -56,6 +57,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->draw, &QPushButton::clicked, this, &MainWindow::drawButtonClicked);
     connect(ui->fill, &QPushButton::clicked, this, &MainWindow::fillButtonClicked);
     connect(ui->colorBtn, &QPushButton::clicked, this, &MainWindow::colorButtonClicked);
+
+    connect(saveAction, &QAction::triggered, this, &MainWindow::saveDrawing);
+    connect(loadAction, &QAction::triggered, this, &MainWindow::loadDrawing);
 }
 
 MainWindow::~MainWindow()
@@ -101,3 +105,16 @@ void MainWindow::colorButtonClicked()
     }
 }
 
+void MainWindow::saveDrawing() {
+    QString filePath = QFileDialog::getSaveFileName(this, tr("Save Drawing"), "", tr("JSON Files (*.json)"));
+    if (!filePath.isEmpty()) {
+        ui->graphicsCanvas->saveDrawing(filePath);
+    }
+}
+
+void MainWindow::loadDrawing() {
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Open Drawing"), "", tr("JSON Files (*.json)"));
+    if (!filePath.isEmpty()) {
+        ui->graphicsCanvas->loadDrawing(filePath);
+    }
+}

@@ -4,6 +4,10 @@
 #include <QGraphicsView>
 #include <QMouseEvent>
 #include <QGraphicsScene>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QFile>
 
 class drawingCanvas : public QGraphicsView {
     Q_OBJECT
@@ -16,9 +20,12 @@ public:
     void drawingMode(bool state);
     void fillMode(bool state);
 
+    void saveDrawing(const QString &filePath);
+    void loadDrawing(const QString &filePath);
+
 
 protected:
-    void drawGrid(double gridDimension);
+    void drawGrid();
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
@@ -32,7 +39,7 @@ private:
     bool drawMode;
     bool fillActive;
     double gridDimension;
-    QColor color = Qt::black; // default color to black
+    QColor localColor = Qt::black; // default color to black
     QColor colorPrev = Qt::black; // Saves the previous color to go back to
     double scaleFactor;
 
