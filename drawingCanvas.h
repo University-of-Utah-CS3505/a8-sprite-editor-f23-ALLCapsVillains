@@ -15,6 +15,7 @@ public:
 
     void drawingMode(bool state);
     void fillMode(bool state);
+    void selectionMode(bool state);
 
 
 protected:
@@ -24,17 +25,25 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void drawOnGrid(const QPoint &position);
     void fillBucket(const QPointF, int scaleX, int scaleY);
+    void movePixels(const QPointF);
 
 private:
     QGraphicsScene *scene;
-    bool drawActive;
+    bool toolActive;
     bool eraseActive;
-    bool drawMode;
+    bool drawActive;
     bool fillActive;
+    bool selectionActive;
+
+    bool moving;
+    QPointF lastMousePosition;
+    QPointF delta;
+    double currentGridDimension;
+
     double gridDimension;
     QColor color = Qt::black; // default color to black
     QColor colorPrev = Qt::black; // Saves the previous color to go back to
-    double scaleFactor;
+    double scaleFactor; // holds the length of each square on grid
 
 public slots:
 

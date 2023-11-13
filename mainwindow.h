@@ -27,6 +27,7 @@ private slots:
     void drawButtonClicked();
     void fillButtonClicked();
     void colorButtonClicked();
+    void selectionButtonClicked();
 };
 
 #endif // MAINWINDOW_H

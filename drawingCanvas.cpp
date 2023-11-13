@@ -17,6 +17,7 @@ drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
     this->invalidateScene();
 
     double startGridDimension = 10;
+    currentGridDimension = startGridDimension;
 
     scene->setSceneRect(0, 0, startGridDimension * 49, startGridDimension * 49);
 
@@ -30,6 +31,8 @@ drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
 void drawingCanvas::drawGrid(double gridDimension) {
 
     scaleFactor = this->width() / gridDimension;
+    currentGridDimension = gridDimension;
+
     // Clear the old grids
     scene->clear();
 
@@ -51,8 +54,8 @@ void drawingCanvas::gridSizeChanged(int newSize) {
 
 // mouse clic
 void drawingCanvas::mousePressEvent(QMouseEvent *event) {
-    drawActive = true;
-    if (drawMode)
+    toolActive = true;
+    if (drawActive)
     {
         drawOnGrid(event->pos());
     }
@@ -62,23 +65,49 @@ void drawingCanvas::mousePressEvent(QMouseEvent *event) {
         QPointF fillPoint = mapToScene(event->pos());
         fillBucket(fillPoint, 0, 0);
     }
+
+    if (selectionActive)
+    {
+        moving = true;
+        lastMousePosition = mapToScene(event->pos());
+        delta.setX(0);
+        delta.setY(0);
+    }
 }
 
 // mouse drag
 void drawingCanvas::mouseMoveEvent(QMouseEvent *event) {
-    if (drawActive && drawMode) {
+    if (toolActive && drawActive) {
         drawOnGrid(event->pos());
     }
-    if (drawActive && fillActive)
+
+    if (toolActive && fillActive)
     {
         QPointF fillPoint = mapToScene(event->pos());
         fillBucket(fillPoint, 0, 0);
     }
-}
 
+    if (toolActive && selectionActive)
+    {
+        if (moving)
+        {
+            delta = mapToScene(event->pos()) - lastMousePosition;
+            qDebug()<<"last mouse: "<<lastMousePosition;
+            qDebug()<<"current mouse: "<<mapToScene(event->pos());
+            qDebug()<<"change: "<<delta;
+            //lastMousePosition = mapToScene(event->pos());
+        }
+    }
+}
 // mouse release
 void drawingCanvas::mouseReleaseEvent(QMouseEvent *event) {
-    drawActive = false;
+    toolActive = false;
+
+    if (moving)
+    {
+        moving = false;
+        movePixels(delta);
+    }
 }
 
 void drawingCanvas::Eraserchange(bool state) {
@@ -88,7 +117,7 @@ void drawingCanvas::Eraserchange(bool state) {
 
 void drawingCanvas::drawingMode(bool state) {
     //change the erase active status, when click the erase button
-    drawMode = state;
+    drawActive = state;
 }
 
 void drawingCanvas::fillMode(bool state) {
@@ -100,6 +129,11 @@ void drawingCanvas::colorChange(QColor newColor)
 {
     colorPrev = newColor;
     color = newColor;
+}
+
+void drawingCanvas::selectionMode(bool state)
+{
+    selectionActive = state;
 }
 
 // draw colors on the grids
@@ -152,4 +186,34 @@ void drawingCanvas::fillBucket(QPointF scenePoint, int scaleX, int scaleY)
     fillBucket(scenePoint, -scaleFactor, 0);
     fillBucket(scenePoint, 0, scaleFactor);
     fillBucket(scenePoint, 0, -scaleFactor);
+}
+
+void drawingCanvas::movePixels(QPointF delta)
+{
+//    for (int x = 0; x <= gridDimension; x++) {
+//        for (int y = 0; y <= gridDimension; y++) {
+//            scene->addRect(x * scaleFactor, y * scaleFactor, scaleFactor, scaleFactor, pen, brush);
+//        }
+//    }
+    for (int x = 0; x <= currentGridDimension; x++) {
+        for (int y = 0; y <= currentGridDimension; y++) {
+            QPointF coor;
+            coor.setX(x * scaleFactor);
+            coor.setY(y * scaleFactor);
+            QPointF change = coor + delta;
+            QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(coor, QTransform()));
+            if (change.x() >= scaleFactor || change.y() >= scaleFactor)
+            {
+                QGraphicsRectItem *movedGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(change, QTransform()));
+                if (change.x() < 0 || change.x() >= 500 || change.y() < 0 || change.y() >= 500)
+                {
+
+                }
+                else
+                {
+                    movedGrid->setBrush(currentGrid->brush().color());
+                }
+            }
+        }
+    }
 }

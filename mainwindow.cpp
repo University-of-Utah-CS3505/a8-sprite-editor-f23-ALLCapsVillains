@@ -56,6 +56,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->draw, &QPushButton::clicked, this, &MainWindow::drawButtonClicked);
     connect(ui->fill, &QPushButton::clicked, this, &MainWindow::fillButtonClicked);
     connect(ui->colorBtn, &QPushButton::clicked, this, &MainWindow::colorButtonClicked);
+    connect(ui->selection, &QPushButton::clicked, this, &MainWindow::selectionButtonClicked);
 }
 
 MainWindow::~MainWindow()
@@ -73,6 +74,7 @@ void MainWindow::eraseButtonClicked() {
     ui->graphicsCanvas->drawingMode(true);
     ui->graphicsCanvas->fillMode(false);
     ui->graphicsCanvas->Eraserchange(true);
+    ui->graphicsCanvas->selectionMode(false);
 }
 
 void MainWindow::drawButtonClicked()
@@ -80,12 +82,16 @@ void MainWindow::drawButtonClicked()
     ui->graphicsCanvas->drawingMode(true);
     ui->graphicsCanvas->fillMode(false);
     ui->graphicsCanvas->Eraserchange(false);
+    ui->graphicsCanvas->selectionMode(false);
+
 }
 
 void MainWindow::fillButtonClicked()
 {
     ui->graphicsCanvas->drawingMode(false);
     ui->graphicsCanvas->fillMode(true);
+    ui->graphicsCanvas->selectionMode(false);
+
 }
 
 void MainWindow::colorButtonClicked()
@@ -99,5 +105,12 @@ void MainWindow::colorButtonClicked()
         QString buttonColor = QString("background-color: %1").arg(color.name());
         ui->colorBtn->setStyleSheet(buttonColor);
     }
+}
+
+void MainWindow::selectionButtonClicked()
+{
+    ui->graphicsCanvas->drawingMode(false);
+    ui->graphicsCanvas->fillMode(false);
+    ui->graphicsCanvas->selectionMode(true);
 }
 
