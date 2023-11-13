@@ -4,6 +4,7 @@
 #include <QGraphicsView>
 #include <QMouseEvent>
 #include <QGraphicsScene>
+#include "GridItem.h"
 
 class drawingCanvas : public QGraphicsView {
     Q_OBJECT
@@ -36,6 +37,9 @@ private:
     QColor color = Qt::black; // default color to black
     QColor colorPrev = Qt::black; // Saves the previous color to go back to
     double scaleFactor;
+    QPen pen;
+    QBrush brush;
+    GridItem *gridItem;
 
 public slots:
 

@@ -3,8 +3,15 @@
 
 #include<QDebug>
 
-drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
+drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent), gridItem(nullptr) {
     scene = new QGraphicsScene(this);
+
+    pen = QPen(Qt::gray);
+    pen.setWidth(0);
+    brush = QBrush(Qt::transparent);
+
+    gridItem = new GridItem(gridDimension);
+    scene->addItem(gridItem);
 
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -23,26 +30,45 @@ drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
     this->setSceneRect(5, 5, scene->width(), scene->height());
 
     drawGrid(startGridDimension);
-    //Other initialization code
 }
 
 
-void drawingCanvas::drawGrid(double gridDimension) {
+void drawingCanvas::drawGrid(double newGridDimension) {
+    // Calculate new scale factor
+    double newScaleFactor = this->width() / newGridDimension;
 
-    scaleFactor = this->width() / gridDimension;
-    // Clear the old grids
-    scene->clear();
-
-    QPen pen(Qt::gray);
-    pen.setWidth(0);
-    QBrush brush(Qt::transparent);
-
-    //filling all grids
-    for (int x = 0; x <= gridDimension; x++) {
-        for (int y = 0; y <= gridDimension; y++) {
-            scene->addRect(x * scaleFactor, y * scaleFactor, scaleFactor, scaleFactor, pen, brush);
+    // Temporary container to hold the color data of the current drawing
+    QHash<QGraphicsItem*, QColor> drawingState;
+    if (!scene->items().isEmpty()) {
+        for (auto &item : scene->items()) {
+            QGraphicsRectItem *rect = qgraphicsitem_cast<QGraphicsRectItem*>(item);
+            if (rect) {
+                drawingState[rect] = rect->brush().color();
+            }
         }
     }
+
+    // Now resize and reposition existing grid items or create new ones as necessary
+    for (int x = 0; x < newGridDimension; ++x) {
+        for (int y = 0; y < newGridDimension; ++y) {
+            QGraphicsRectItem *rect = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(x * scaleFactor, y * scaleFactor, QTransform()));
+            if (!rect) {
+                // If there's no item at this position, create a new one
+                rect = scene->addRect(x * newScaleFactor, y * newScaleFactor, newScaleFactor, newScaleFactor, pen, brush);
+            } else {
+                // If there is an item, reposition and resize it
+                rect->setRect(x * newScaleFactor, y * newScaleFactor, newScaleFactor, newScaleFactor);
+            }
+
+            // Restore the drawing state if it was saved earlier
+            if (drawingState.contains(rect)) {
+                rect->setBrush(QBrush(drawingState[rect]));
+            }
+        }
+    }
+
+    // Update the scaleFactor with the new one
+    scaleFactor = newScaleFactor;
 }
 
 void drawingCanvas::gridSizeChanged(int newSize) {
