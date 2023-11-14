@@ -69,6 +69,10 @@ void MainWindow::changeGridSize(){
 }
 
 void MainWindow::eraseButtonClicked() {
+    QPixmap eraserMap(":/eraser.png");
+    eraserMap.setDevicePixelRatio(24);
+    QCursor c = QCursor(eraserMap, 0, 0);
+    setCursor(c);
     //calling the Eraserchange method for change the earser's status.
     //Active to be not active, or reverse.
     ui->graphicsCanvas->drawingMode(true);
@@ -79,6 +83,10 @@ void MainWindow::eraseButtonClicked() {
 
 void MainWindow::drawButtonClicked()
 {
+    QPixmap penMap(":/pen.png");
+    penMap.setDevicePixelRatio(24);
+    QCursor c = QCursor(penMap, 0, 0);
+    setCursor(c);
     ui->graphicsCanvas->drawingMode(true);
     ui->graphicsCanvas->fillMode(false);
     ui->graphicsCanvas->Eraserchange(false);
@@ -88,6 +96,10 @@ void MainWindow::drawButtonClicked()
 
 void MainWindow::fillButtonClicked()
 {
+    QPixmap fillBucketMap(":/fillBucket.png");
+    fillBucketMap.setDevicePixelRatio(18);
+    QCursor c = QCursor(fillBucketMap, 0, 0);
+    setCursor(c);
     ui->graphicsCanvas->drawingMode(false);
     ui->graphicsCanvas->fillMode(true);
     ui->graphicsCanvas->selectionMode(false);
@@ -109,6 +121,10 @@ void MainWindow::colorButtonClicked()
 
 void MainWindow::selectionButtonClicked()
 {
+    QPixmap handMap(":/hand.png");
+    handMap.setDevicePixelRatio(18);
+    QCursor c = QCursor(handMap, 0, 0);
+    setCursor(c);
     ui->graphicsCanvas->drawingMode(false);
     ui->graphicsCanvas->fillMode(false);
     ui->graphicsCanvas->selectionMode(true);
