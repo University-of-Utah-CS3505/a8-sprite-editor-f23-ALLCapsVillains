@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <drawingCanvas.h>
+#include<QDebug>
+#include <QFileDialog>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -9,9 +11,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     QMenu * menu = menuBar()->addMenu("File");
 
-    menu->addAction("Save");
+    QAction *saveAction = menu->addAction("Save");
     menu->addAction("Save As");
-    menu->addAction("Load");
+    QAction *loadAction = menu->addAction("Load");
 
     menu=menuBar()->addMenu("Presets");
     menu->addAction("Insert Preset 1");
@@ -49,8 +51,15 @@ MainWindow::MainWindow(QWidget *parent)
     QIcon handIcon(handMap);
     ui->selection->setIcon(handIcon);
 
+    ui->colorBtn->setStyleSheet("background-color: black"); // default color to black
+
     connect(ui->erase, &QPushButton::clicked, this, &MainWindow::eraseButtonClicked);
     connect(ui->draw, &QPushButton::clicked, this, &MainWindow::drawButtonClicked);
+    connect(ui->fill, &QPushButton::clicked, this, &MainWindow::fillButtonClicked);
+    connect(ui->colorBtn, &QPushButton::clicked, this, &MainWindow::colorButtonClicked);
+
+    connect(saveAction, &QAction::triggered, this, &MainWindow::saveDrawing);
+    connect(loadAction, &QAction::triggered, this, &MainWindow::loadDrawing);
 }
 
 MainWindow::~MainWindow()
@@ -65,11 +74,47 @@ void MainWindow::changeGridSize(){
 void MainWindow::eraseButtonClicked() {
     //calling the Eraserchange method for change the earser's status.
     //Active to be not active, or reverse.
+    ui->graphicsCanvas->drawingMode(true);
+    ui->graphicsCanvas->fillMode(false);
     ui->graphicsCanvas->Eraserchange(true);
 }
 
 void MainWindow::drawButtonClicked()
 {
+    ui->graphicsCanvas->drawingMode(true);
+    ui->graphicsCanvas->fillMode(false);
     ui->graphicsCanvas->Eraserchange(false);
 }
 
+void MainWindow::fillButtonClicked()
+{
+    ui->graphicsCanvas->drawingMode(false);
+    ui->graphicsCanvas->fillMode(true);
+}
+
+void MainWindow::colorButtonClicked()
+{
+    QColor color = QColorDialog::getColor(Qt::white, this, "Choose Color");
+    if (color.isValid())
+    {
+        ui->graphicsCanvas->colorChange(color);
+
+        // Change the icon to selected color
+        QString buttonColor = QString("background-color: %1").arg(color.name());
+        ui->colorBtn->setStyleSheet(buttonColor);
+    }
+}
+
+void MainWindow::saveDrawing() {
+    QString filePath = QFileDialog::getSaveFileName(this, tr("Save Drawing"), "", tr("JSON Files (*.json)"));
+    if (!filePath.isEmpty()) {
+        ui->graphicsCanvas->saveDrawing(filePath);
+    }
+}
+
+void MainWindow::loadDrawing() {
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Open Drawing"), "", tr("JSON Files (*.json)"));
+    if (!filePath.isEmpty()) {
+        ui->graphicsCanvas->loadDrawing(filePath);
+    }
+}

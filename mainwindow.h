@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include<QColorDialog>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -24,6 +25,10 @@ public slots:
     void eraseButtonClicked();
 private slots:
     void drawButtonClicked();
+    void fillButtonClicked();
+    void colorButtonClicked();
+    void saveDrawing();
+    void loadDrawing();
 };
 
 #endif // MAINWINDOW_H
