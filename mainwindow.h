@@ -17,6 +17,7 @@ public:
     ~MainWindow();
 
     void changeGridSize();
+    int frame=0;
 
 private:
     Ui::MainWindow *ui;
@@ -29,6 +30,14 @@ private slots:
     void colorButtonClicked();
     void saveDrawing();
     void loadDrawing();
+    void rojoTheme();
+    void darkTheme();
+    void skyTheme();
+    void mochaTheme();
+    void clearPage();
+    void on_addFrame_clicked();
+    void on_deleteFrame_clicked();
+    void on_framePicker_valueChanged(int arg1);
 };
 
 #endif // MAINWINDOW_H

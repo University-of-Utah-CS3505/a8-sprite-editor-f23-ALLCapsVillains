@@ -1,9 +1,17 @@
 <RCC>
-    <qresource prefix="/new/logos"/>
+    <qresource prefix="/new/logos">
+        <file>punkkkkk.jpg</file>
+        <file>heartiee-removebg-preview.png</file>
+        <file>cloudyy-removebg-preview.png</file>
+        <file>rojoooo.gif</file>
+        <file>cybaaa.gif</file>
+    </qresource>
     <qresource prefix="/">
         <file>fillBucket.png</file>
         <file>eraser.png</file>
         <file>hand.png</file>
         <file>pen.png</file>
+        <file>cuofeebg.png</file>
+        <file>kratoss.gif</file>
     </qresource>
 </RCC>

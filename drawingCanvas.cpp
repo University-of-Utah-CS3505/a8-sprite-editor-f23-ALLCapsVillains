@@ -27,15 +27,47 @@ drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
     this->setSceneRect(5, 5, scene->width(), scene->height());
 
     drawGrid();
+
     //Other initialization code
+    frames.insert(0,scene);
 }
 
+
+void drawingCanvas::newFrame(){
+    frame++;
+    QGraphicsScene* frameAdded = new QGraphicsScene(this);
+    frames.insert(frame,frameAdded);
+}
+
+void drawingCanvas::frameChanged(int i){
+    this->setScene(frames.value(i));
+    scene = frames.value(i);
+    drawGrid();
+
+}
+void drawingCanvas::framePick(int i){
+    this->setScene(frames.value(i));
+    scene = frames.value(i);
+
+}
+
+void drawingCanvas::deleteFrame(int i){
+    if(frames.count() > 0){
+        frame--;
+
+    this->setScene(frames.value(i-1));
+    scene = frames.value(i-1);
+
+    }
+
+}
 
 void drawingCanvas::drawGrid() {
 
     scaleFactor = this->width() / gridDimension;
     // Clear the old grids
     scene->clear();
+
 
     QPen pen(Qt::gray);
     pen.setWidth(0);
@@ -51,6 +83,7 @@ void drawingCanvas::drawGrid() {
 
 void drawingCanvas::gridSizeChanged(int newSize) {
     gridDimension = newSize;
+
     drawGrid();
 }
 
@@ -158,6 +191,12 @@ void drawingCanvas::fillBucket(QPointF scenePoint, int scaleX, int scaleY)
     fillBucket(scenePoint, 0, scaleFactor);
     fillBucket(scenePoint, 0, -scaleFactor);
 }
+void drawingCanvas::clear(){
+    scene->clear();
+    drawGrid();
+}
+
+
 
 void drawingCanvas::saveDrawing(const QString &filePath) {
     QJsonArray jsonArray;

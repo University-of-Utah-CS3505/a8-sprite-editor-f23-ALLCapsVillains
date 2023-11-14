@@ -16,6 +16,7 @@ public:
     explicit drawingCanvas(QWidget *parent = nullptr);
     void Eraserchange(bool state);
     void colorChange(QColor newColor);
+    void clear();
 
     void drawingMode(bool state);
     void fillMode(bool state);
@@ -23,9 +24,15 @@ public:
     void saveDrawing(const QString &filePath);
     void loadDrawing(const QString &filePath);
 
+    void newFrame();
+    void frameChanged(int i);
+    int frame;
+    void framePick(int i);
+    void deleteFrame(int i);
 
 protected:
     void drawGrid();
+
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
@@ -34,6 +41,7 @@ protected:
 
 private:
     QGraphicsScene *scene;
+    QMap<int,QGraphicsScene*> frames ;
     bool drawActive;
     bool eraseActive;
     bool drawMode;
