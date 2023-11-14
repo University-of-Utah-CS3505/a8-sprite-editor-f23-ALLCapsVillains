@@ -19,6 +19,10 @@ public:
     //getting the drawing area scene for copy
     QGraphicsScene* getScene() const;
 
+    void addNewFrame();
+    void cleanGrids();
+
+
 protected:
     void drawGrid(double gridDimension);
     void mousePressEvent(QMouseEvent *event) override;
@@ -26,6 +30,8 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void drawOnGrid(const QPoint &position);
     void fillBucket(const QPointF, int scaleX, int scaleY);
+
+
 
 private:
     QGraphicsScene *scene;
@@ -41,13 +47,17 @@ private:
     QBrush brush;
     GridItem *gridItem;
 
+    int currentFrameIndex;
+
+
 public slots:
 
     void gridSizeChanged(int newSize);
 
 signals:
     //for expressing draw has been finished
-    void drawingFinish();
+    void drawingFinish(int currentFrameIndex);
+    void updatePreviewWindow();
 };
 
 #endif // DRAWINGCANVAS_H

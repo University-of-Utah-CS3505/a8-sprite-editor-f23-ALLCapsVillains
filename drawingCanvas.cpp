@@ -13,6 +13,8 @@ drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent), gridItem(
     gridItem = new GridItem(gridDimension);
     scene->addItem(gridItem);
 
+    currentFrameIndex = 0;
+
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
@@ -105,7 +107,8 @@ void drawingCanvas::mouseMoveEvent(QMouseEvent *event) {
 // mouse release
 void drawingCanvas::mouseReleaseEvent(QMouseEvent *event) {
     drawActive = false;
-    emit drawingFinish();
+    emit drawingFinish(currentFrameIndex);
+    emit updatePreviewWindow();
 }
 
 void drawingCanvas::Eraserchange(bool state) {
@@ -183,4 +186,18 @@ void drawingCanvas::fillBucket(QPointF scenePoint, int scaleX, int scaleY)
 //getting the drawing area scene for copying to preview window
 QGraphicsScene* drawingCanvas::getScene() const {
     return scene;
+}
+
+// just clean the grids
+void drawingCanvas::cleanGrids() {
+    for (auto &item : scene->items()) {
+        QGraphicsRectItem *rect = qgraphicsitem_cast<QGraphicsRectItem*>(item);
+        if (rect) {
+            rect->setBrush(QBrush(Qt::white));
+        }
+    }
+}
+void drawingCanvas::addNewFrame() {
+    cleanGrids();
+    currentFrameIndex ++;
 }
