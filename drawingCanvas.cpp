@@ -32,45 +32,47 @@ drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent), gridItem(
     this->setSceneRect(5, 5, scene->width(), scene->height());
 
     drawGrid(startGridDimension);
+    //sam
+    //frames.insert(0,scene);
 }
 
 
 void drawingCanvas::drawGrid(double newGridDimension) {
-    // Calculate new scale factor
+    // Calculate the new scale factor based on the new grid dimension
     double newScaleFactor = this->width() / newGridDimension;
 
-    // Temporary container to hold the color data of the current drawing
-    QHash<QGraphicsItem*, QColor> drawingState;
-    if (!scene->items().isEmpty()) {
-        for (auto &item : scene->items()) {
-            QGraphicsRectItem *rect = qgraphicsitem_cast<QGraphicsRectItem*>(item);
-            if (rect) {
-                drawingState[rect] = rect->brush().color();
-            }
-        }
-    }
+    // Clear the current grid from the scene
+    scene->clear();
 
-    // Now resize and reposition existing grid items or create new ones as necessary
+    // Create the new grid based on the new grid dimension
     for (int x = 0; x < newGridDimension; ++x) {
         for (int y = 0; y < newGridDimension; ++y) {
-            QGraphicsRectItem *rect = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(x * scaleFactor, y * scaleFactor, QTransform()));
-            if (!rect) {
-                // If there's no item at this position, create a new one
-                rect = scene->addRect(x * newScaleFactor, y * newScaleFactor, newScaleFactor, newScaleFactor, pen, brush);
-            } else {
-                // If there is an item, reposition and resize it
-                rect->setRect(x * newScaleFactor, y * newScaleFactor, newScaleFactor, newScaleFactor);
-            }
+            scene->addRect(x * newScaleFactor, y * newScaleFactor, newScaleFactor, newScaleFactor, pen, brush);
+        }
+    }
 
-            // Restore the drawing state if it was saved earlier
-            if (drawingState.contains(rect)) {
-                rect->setBrush(QBrush(drawingState[rect]));
+    // Use the full-resolution drawing state to redraw the visible cells
+    QHash<QPoint, QColor> visibleDrawingState; // Stores the visible state after resizing
+    for (const QPoint &point : fullResolutionDrawingState.keys()) {
+        int scaledX = static_cast<int>(point.x() * (newScaleFactor / scaleFactor));
+        int scaledY = static_cast<int>(point.y() * (newScaleFactor / scaleFactor));
+
+        if (scaledX < newGridDimension && scaledY < newGridDimension) {
+            // The cell is visible in the new grid
+            visibleDrawingState[QPoint(scaledX, scaledY)] = fullResolutionDrawingState[point];
+
+            QGraphicsRectItem *rect = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scaledX * newScaleFactor, scaledY * newScaleFactor, QTransform()));
+            if (rect) {
+                rect->setBrush(QBrush(fullResolutionDrawingState[point]));
             }
         }
     }
 
-    // Update the scaleFactor with the new one
-    scaleFactor = newScaleFactor;
+
+    // Update the visible drawing state
+    drawingState = visibleDrawingState;
+    scaleFactor = newScaleFactor; // Update the scale factor
+    gridDimension = newGridDimension; // Update the grid dimension
 }
 
 void drawingCanvas::gridSizeChanged(int newSize) {
@@ -134,23 +136,20 @@ void drawingCanvas::colorChange(QColor newColor)
 
 // draw colors on the grids
 void drawingCanvas::drawOnGrid(const QPoint &position) {
-    //find the view coordinate corresponding to the mouse location
     QPointF scenePoint = mapToScene(position);
+    int gridX = static_cast<int>(floor(scenePoint.x() / scaleFactor));
+    int gridY = static_cast<int>(floor(scenePoint.y() / scaleFactor));
+    QPoint gridPos(gridX, gridY);
 
-    //find the current the grid we chosed and change its color
+    QColor currentColor = eraseActive ? Qt::transparent : color;
+    drawingState[gridPos] = currentColor; // Update the visible drawing state
+
+    // Also update the full-resolution drawing state
+    fullResolutionDrawingState[gridPos] = currentColor;
+
     QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
     if (currentGrid) {
-        //change its color transparent or previous color based on if erase is active
-        if (eraseActive)
-        {
-            color = Qt::transparent;
-        }
-        else
-        {
-            // Go back to the color selected by the user before they selected erase button
-            color = colorPrev;
-        }
-        currentGrid->setBrush(QBrush(color));
+        currentGrid->setBrush(QBrush(currentColor));
     }
 }
 
@@ -184,7 +183,7 @@ void drawingCanvas::fillBucket(QPointF scenePoint, int scaleX, int scaleY)
     fillBucket(scenePoint, 0, -scaleFactor);
 }
 //getting the drawing area scene for copying to preview window
-QGraphicsScene* drawingCanvas::getScene() const {
+QGraphicsScene* drawingCanvas::getScene() {
     return scene;
 }
 
@@ -201,3 +200,68 @@ void drawingCanvas::addNewFrame() {
     cleanGrids();
     currentFrameIndex ++;
 }
+
+//sam's version
+//void drawingCanvas::newFrame(){
+//    frame++;
+//    QGraphicsScene* frameAdded = new QGraphicsScene(this);
+//    frames.insert(frame,frameAdded);
+//}
+
+//void drawingCanvas::frameChanged(int i){
+//    this->setScene(frames.value(i));
+//    scene = frames.value(i);
+//    drawGrid(10);
+
+//}
+//void drawingCanvas::framePick(int i){
+//    this->setScene(frames.value(i));
+//    scene = frames.value(i);
+
+//}
+
+//void drawingCanvas::deleteFrame(int i){
+//    if(frames.count() > 0){
+//        frame --;
+
+
+//        this->setScene(frames.value(i-1));
+//        scene = frames.value(i-1);
+
+//    }
+
+//}
+
+//void drawingCanvas::addNewFrame() {
+//    // Create a new scene for the new frame
+//    QGraphicsScene* newScene = new QGraphicsScene(this);
+//    // Add the new scene to the map
+//    frameScenes.insert(++currentFrameIndex, newScene);
+//    // Optionally, emit a signal to update the UI
+//    //emit frameAdded(currentFrameIndex);
+//}
+
+//void drawingCanvas::setCurrentFrame(int index) {
+//    if(frameScenes.contains(index)) {
+//        // Set the current scene to the selected frame's scene
+//        this->setScene(frameScenes.value(index));
+//        currentFrameIndex = index;
+//        // Optionally, emit a signal to update the UI
+//        //emit frameChanged(index);
+//    }
+//}
+
+//QGraphicsScene* drawingCanvas::getFrameScene(int index) {
+//    return frameScenes.value(index, nullptr);
+//}
+
+//void drawingCanvas::deleteCurrentFrame() {
+//    if(frameScenes.size() > 1 && frameScenes.contains(currentFrameIndex)) {
+//        QGraphicsScene* sceneToDelete = frameScenes.take(currentFrameIndex);
+//        delete sceneToDelete;
+//        // Adjust the current frame index and set the scene
+//        setCurrentFrame(--currentFrameIndex);
+//        // Optionally, emit a signal to update the UI
+//        //emit frameDeleted(currentFrameIndex);
+//    }
+//}

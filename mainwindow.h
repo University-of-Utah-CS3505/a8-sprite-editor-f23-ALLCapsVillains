@@ -21,6 +21,7 @@ public:
     void changeGridSize();
     void previewWindowUpdate();
     void frameUpdate(int index);
+    void fpsChanged(int fps);
 
 private:
     Ui::MainWindow *ui;
@@ -29,6 +30,10 @@ private:
 
     int currentFrameIndex;
 
+    QMap<int,QGraphicsScene*> frames;
+    QGraphicsScene *previousScene;
+    QGraphicsScene *nextScene;
+
 public slots:
     void eraseButtonClicked();
 private slots:
@@ -36,6 +41,8 @@ private slots:
     void fillButtonClicked();
     void colorButtonClicked();
     void on_addFrame_clicked();
+    void on_deleteFrame_clicked();
+    void on_spinBox_valueChanged(int arg1);
 };
 
 #endif

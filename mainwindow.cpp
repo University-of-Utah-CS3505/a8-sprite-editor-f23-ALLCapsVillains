@@ -83,6 +83,10 @@ MainWindow::MainWindow(QWidget *parent)
     previewAnimationTimer = new QTimer(this);
     connect(previewAnimationTimer, &QTimer::timeout, this, &MainWindow::previewWindowUpdate);
 
+    connect(ui->slider, &QSlider::valueChanged, this, &MainWindow::fpsChanged);
+
+    connect(ui->spinBox, &QSpinBox::valueChanged, this, &MainWindow::on_spinBox_valueChanged);
+
 }
 
 MainWindow::~MainWindow()
@@ -169,6 +173,7 @@ void MainWindow::frameUpdate(int index) {
     if (ui->graphicsCanvas && framesViewsList[index]) {
         // Capture contents and the rectangle boundaries of the drawing canvas
         QGraphicsScene* drawingScene = ui->graphicsCanvas->getScene();
+        frames[currentFrameIndex] = drawingScene;
         QRectF sceneRectBound = drawingScene->sceneRect();
 
         //drawing the drawing scene onto the pixmap for using
@@ -198,6 +203,7 @@ void MainWindow::frameUpdate(int index) {
 
 void MainWindow::on_addFrame_clicked()
 {
+    currentFrameIndex++;
     //call the addNewFrame method in graphicsCanvs
     ui->graphicsCanvas->addNewFrame();
 
@@ -217,12 +223,54 @@ void MainWindow::on_addFrame_clicked()
 
     //add this new frame to the frames list and update current frame index
     framesViewsList.append(newFrameView);
-    currentFrameIndex ++;
 
     //Only has 2 or more frames to start the animation timer
     if (framesViewsList.size() == 2) {
         //1 second for each
         previewAnimationTimer->start(1000);
+        ui->fpsLabel->setText("FPS : 1");
+        ui->slider->setValue(1);
     }
 
 }
+
+void MainWindow::fpsChanged(int fps){
+    if(fps == 0){
+        previewAnimationTimer->stop();
+        ui->fpsLabel->setText("FPS : 0");
+    }else{
+        previewAnimationTimer->start(1000/fps);
+        ui->fpsLabel->setText("FPS : " + QString::number(fps));
+
+    }
+
+}
+
+void MainWindow::on_deleteFrame_clicked()
+{
+    if (framesViewsList.size() <= 1) {
+        // Optionally, clear the last frame instead of deleting it
+        return;
+    }
+
+    // Assuming currentFrameIndex is the index of the frame to delete
+    QGraphicsView* frameToDelete = framesViewsList.at(currentFrameIndex);
+
+    // Remove the frame from the UI and delete it
+    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(ui->scrollAreaWidgetContents->layout());
+    layout->removeWidget(frameToDelete);
+    framesViewsList.removeAt(currentFrameIndex);
+    delete frameToDelete;
+
+    // Adjust the currentFrameIndex to the previous frame
+    currentFrameIndex = qMax(0, currentFrameIndex - 1);
+
+}
+
+void MainWindow::on_spinBox_valueChanged(int value)
+{
+    //ui->graphicsCanvas->setScene(frames[value]);
+    QGraphicsScene *scene = frames[value];
+    ui->graphicsCanvas->setScene(scene);
+}
+
