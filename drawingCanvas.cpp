@@ -3,6 +3,7 @@
 
 #include<QDebug>
 #include <iostream>
+#include<algorithm>
 
 drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
     scene = new QGraphicsScene(this);
@@ -36,25 +37,17 @@ void drawingCanvas::drawGrid(double gridDimension) {
 
     // Clear the old grids
     scene->clear();
-    allSquares.clear();
-    squareItems.clear();
 
     QPen pen(Qt::gray);
     pen.setWidth(0);
     QBrush brush(Qt::transparent);
 
-    qDebug()<<scaleFactor;
     //filling all grids
     for (int x = 0; x <= gridDimension; x++) {
         for (int y = 0; y <= gridDimension; y++) {
             scene->addRect(x * scaleFactor, y * scaleFactor, scaleFactor, scaleFactor, pen, brush);
-            QGraphicsRectItem* rect = scene->addRect(x * scaleFactor, y * scaleFactor, scaleFactor, scaleFactor, pen, brush);
-            int squareId = nextSquareId++;
-            squareItems[squareId] = rect;
-            allSquares[squareId] = Qt::transparent;
         }
     }
-    nextSquareId = 0;
 }
 
 void drawingCanvas::gridSizeChanged(int newSize) {
@@ -64,6 +57,7 @@ void drawingCanvas::gridSizeChanged(int newSize) {
 // mouse clic
 void drawingCanvas::mousePressEvent(QMouseEvent *event) {
     toolActive = true;
+    qDebug()<<event->pos();
     if (drawActive)
     {
         drawOnGrid(event->pos());
@@ -79,8 +73,6 @@ void drawingCanvas::mousePressEvent(QMouseEvent *event) {
     {
         moving = true;
         lastMousePosition = mapToScene(event->pos());
-        delta.setX(0);
-        delta.setY(0);
     }
 }
 
@@ -100,9 +92,13 @@ void drawingCanvas::mouseMoveEvent(QMouseEvent *event) {
     {
         if (moving)
         {
-            delta = mapToScene(event->pos()) - lastMousePosition;
-            movePixels(delta);
-            lastMousePosition = mapToScene(event->pos());
+            QPointF delta = mapToScene(event->pos()) - lastMousePosition;
+
+            if (delta.x() >= scaleFactor || delta.x() <= -scaleFactor || delta.y() >= scaleFactor || delta.y() <= -scaleFactor)
+            {
+                movePixels(delta);
+                lastMousePosition = mapToScene(event->pos());
+            }
         }
     }
 }
@@ -161,14 +157,6 @@ void drawingCanvas::drawOnGrid(const QPoint &position) {
             color = colorPrev;
         }
         currentGrid->setBrush(QBrush(color));
-
-        int squareId = nextSquareId++;
-        squareItems[squareId] = currentGrid;
-        allSquares[squareId] = color;
-
-        qDebug()<<currentGrid->sceneBoundingRect().center();
-        qDebug()<<position;
-        qDebug()<<scenePoint;
     }
 }
 
@@ -204,25 +192,19 @@ void drawingCanvas::fillBucket(QPointF scenePoint, double scaleX, double scaleY)
 
 void drawingCanvas::movePixels(QPointF delta)
 {
-//    std::map<QGraphicsRectItem*, QColor>newGridColors;
-//    for (const auto &item : allSquares) {
-//        QPointF origin = item.first->sceneBoundingRect().center();
-//        QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(origin + delta, QTransform()));
-//        newGridColors[currentGrid] = item.second;
-//    }
-//    allSquares = newGridColors;
-//    updateGridDisplay();
-
     int dx = delta.x() / scaleFactor;
     int dy = delta.y() / scaleFactor;
 
-    QVector<QVector<QColor>> newGridColors(currentGridDimension, QVector<QColor>(currentGridDimension, Qt::transparent));
+    // Constrain movement to within the canvas boundaries
+    dx = std::max(std::min(dx, 500 - 1), -500 + 1);
+    dy = std::max(std::min(dy, 500 - 1), -500 + 1);
 
+    QVector<QVector<QColor>> newGridColors(currentGridDimension, QVector<QColor>(currentGridDimension, Qt::transparent)); 
     // Move colors to new positions
     for (int y = 0; y < currentGridDimension; y++) {
         for (int x = 0; x < currentGridDimension; x++) {
-            int newX = x + dx;
-            int newY = y + dy;
+            int newX = (x + dx);
+            int newY = (y + dy);
             if (newX >= 0 && newY >= 0 && newX < currentGridDimension && newY < currentGridDimension) {
                 QGraphicsItem *item = scene->itemAt(x * scaleFactor, y * scaleFactor, QTransform());
                 QGraphicsRectItem *rectItem = qgraphicsitem_cast<QGraphicsRectItem*>(item);
@@ -244,16 +226,3 @@ void drawingCanvas::movePixels(QPointF delta)
         }
     }
 }
-
-//void drawingCanvas::updateGridDisplay()
-//{
-//    foreach (QGraphicsItem *item, scene->items()) {
-//        QGraphicsRectItem *rect = qgraphicsitem_cast<QGraphicsRectItem*>(item);
-//        if (rect) {
-//            QPointF gridPosition = rect->sceneBoundingRect().center();
-//            QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(gridPosition, QTransform()));
-//            QColor color = allSquares[currentGrid];
-//            rect->setBrush(QBrush(color));
-//        }
-//    }
-//}

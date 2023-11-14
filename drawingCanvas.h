@@ -38,13 +38,7 @@ private:
 
     bool moving;
     QPointF lastMousePosition;
-    QPointF delta;
     double currentGridDimension;
-
-    std::map<int, QColor> allSquares; // Map from square ID to color
-    std::map<int, QGraphicsRectItem*> squareItems; // Map from square ID to QGraphicsRectItem
-    int nextSquareId = 0; // Increment this for each new square
-    void updateGridDisplay();
 
     double gridDimension;
     QColor color = Qt::black; // default color to black
