@@ -195,10 +195,6 @@ void drawingCanvas::movePixels(QPointF delta)
     int dx = delta.x() / scaleFactor;
     int dy = delta.y() / scaleFactor;
 
-    // Constrain movement to within the canvas boundaries
-    dx = std::max(std::min(dx, 500 - 1), -500 + 1);
-    dy = std::max(std::min(dy, 500 - 1), -500 + 1);
-
     QVector<QVector<QColor>> newGridColors(currentGridDimension, QVector<QColor>(currentGridDimension, Qt::transparent)); 
     // Move colors to new positions
     for (int y = 0; y < currentGridDimension; y++) {
