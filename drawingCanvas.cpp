@@ -43,6 +43,7 @@ void drawingCanvas::drawGrid(double gridDimension) {
     pen.setWidth(0);
     QBrush brush(Qt::transparent);
 
+    qDebug()<<scaleFactor;
     //filling all grids
     for (int x = 0; x <= gridDimension; x++) {
         for (int y = 0; y <= gridDimension; y++) {
@@ -171,7 +172,7 @@ void drawingCanvas::drawOnGrid(const QPoint &position) {
     }
 }
 
-void drawingCanvas::fillBucket(QPointF scenePoint, int scaleX, int scaleY)
+void drawingCanvas::fillBucket(QPointF scenePoint, double scaleX, double scaleY)
 {
     // Select the square above/below or left/right to check and then fill if passes the checks
     scenePoint.setX(scenePoint.x() + scaleX);
@@ -192,7 +193,6 @@ void drawingCanvas::fillBucket(QPointF scenePoint, int scaleX, int scaleY)
     if (currentGrid)
     {
         currentGrid->setBrush(QBrush(colorPrev));
-        allSquares[currentGrid] = colorPrev;
     }
 
     // Flood fill algorithm to recurse on all sides
@@ -204,25 +204,56 @@ void drawingCanvas::fillBucket(QPointF scenePoint, int scaleX, int scaleY)
 
 void drawingCanvas::movePixels(QPointF delta)
 {
-    std::map<QGraphicsRectItem*, QColor>newGridColors;
-    for (const auto &item : allSquares) {
-        QPointF origin = item.first->sceneBoundingRect().center();
-        QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(origin + delta, QTransform()));
-        newGridColors[currentGrid] = item.second;
-    }
-    allSquares = newGridColors;
-    updateGridDisplay();
-}
+//    std::map<QGraphicsRectItem*, QColor>newGridColors;
+//    for (const auto &item : allSquares) {
+//        QPointF origin = item.first->sceneBoundingRect().center();
+//        QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(origin + delta, QTransform()));
+//        newGridColors[currentGrid] = item.second;
+//    }
+//    allSquares = newGridColors;
+//    updateGridDisplay();
 
-void drawingCanvas::updateGridDisplay()
-{
-    foreach (QGraphicsItem *item, scene->items()) {
-        QGraphicsRectItem *rect = qgraphicsitem_cast<QGraphicsRectItem*>(item);
-        if (rect) {
-            QPointF gridPosition = rect->sceneBoundingRect().center();
-            QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(gridPosition, QTransform()));
-            QColor color = allSquares[currentGrid];
-            rect->setBrush(QBrush(color));
+    int dx = delta.x() / scaleFactor;
+    int dy = delta.y() / scaleFactor;
+
+    QVector<QVector<QColor>> newGridColors(currentGridDimension, QVector<QColor>(currentGridDimension, Qt::transparent));
+
+    // Move colors to new positions
+    for (int y = 0; y < currentGridDimension; y++) {
+        for (int x = 0; x < currentGridDimension; x++) {
+            int newX = x + dx;
+            int newY = y + dy;
+            if (newX >= 0 && newY >= 0 && newX < currentGridDimension && newY < currentGridDimension) {
+                QGraphicsItem *item = scene->itemAt(x * scaleFactor, y * scaleFactor, QTransform());
+                QGraphicsRectItem *rectItem = qgraphicsitem_cast<QGraphicsRectItem*>(item);
+                if (rectItem) {
+                    newGridColors[newY][newX] = rectItem->brush().color();
+                }
+            }
+        }
+    }
+
+    // Update grid colors
+    for (int y = 0; y < currentGridDimension; y++) {
+        for (int x = 0; x < currentGridDimension; x++) {
+            QGraphicsItem *item = scene->itemAt(x * scaleFactor, y * scaleFactor, QTransform());
+            QGraphicsRectItem *rectItem = qgraphicsitem_cast<QGraphicsRectItem*>(item);
+            if (rectItem) {
+                rectItem->setBrush(QBrush(newGridColors[y][x]));
+            }
         }
     }
 }
+
+//void drawingCanvas::updateGridDisplay()
+//{
+//    foreach (QGraphicsItem *item, scene->items()) {
+//        QGraphicsRectItem *rect = qgraphicsitem_cast<QGraphicsRectItem*>(item);
+//        if (rect) {
+//            QPointF gridPosition = rect->sceneBoundingRect().center();
+//            QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(gridPosition, QTransform()));
+//            QColor color = allSquares[currentGrid];
+//            rect->setBrush(QBrush(color));
+//        }
+//    }
+//}
