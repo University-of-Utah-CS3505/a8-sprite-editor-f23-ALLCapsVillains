@@ -100,14 +100,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(loadAction, &QAction::triggered, this, &MainWindow::loadDrawing);
     connect(clear, &QAction::triggered, this, &MainWindow::clearPage);
 
-
     connect(rojo, &QAction::triggered,this,&MainWindow::rojoTheme);
     connect(dark, &QAction::triggered, this, &MainWindow::darkTheme);
     connect(mocha, &QAction::triggered, this,&MainWindow::mochaTheme);
     connect(sky, &QAction::triggered, this, &MainWindow::skyTheme);
     firstFPS = true;
-
-
 }
 
 MainWindow::~MainWindow()

@@ -4,7 +4,6 @@
 #include <QGraphicsView>
 #include <QMouseEvent>
 #include <QGraphicsScene>
-#include "GridItem.h"
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -73,7 +72,6 @@ private:
 
     QPen pen;
     QBrush brush;
-    GridItem *gridItem;
     QHash<QPoint, QColor> drawingState; // Store the color state of each grid cell
     QHash<QPoint, QColor> fullResolutionDrawingState; // Maintain this at the highest resolution
 

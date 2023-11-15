@@ -7,15 +7,12 @@
 
 #include<QDebug>
 
-drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent), gridItem(nullptr) {
+drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
     scene = new QGraphicsScene(this);
 
     pen = QPen(Qt::gray);
     pen.setWidth(0);
     brush = QBrush(Qt::transparent);
-
-    gridItem = new GridItem(gridDimension);
-    scene->addItem(gridItem);
 
     currentFrameIndex = 0;
 
