@@ -11,8 +11,7 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
-{
+    , ui(new Ui::MainWindow){
     ui->setupUi(this);
 
     QWidget *contentWidget = ui->scrollArea->widget();
@@ -107,8 +106,7 @@ MainWindow::MainWindow(QWidget *parent)
     firstFPS = true;
 }
 
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow(){
     if (previewAnimationTimer->isActive()) {
         previewAnimationTimer->stop();
     }
@@ -120,7 +118,7 @@ void MainWindow::changeGridSize(){
     ui->graphicsCanvas->gridSizeChanged(ui->gridSizeSldr->value());
 }
 
-void MainWindow::eraseButtonClicked() {
+void MainWindow::eraseButtonClicked(){
     QPixmap eraserMap(":/eraser.png");
     eraserMap.setDevicePixelRatio(24);
     QCursor c = QCursor(eraserMap, 0, 0);
@@ -133,8 +131,7 @@ void MainWindow::eraseButtonClicked() {
     ui->graphicsCanvas->selectionMode(false);
 }
 
-void MainWindow::drawButtonClicked()
-{
+void MainWindow::drawButtonClicked(){
     QPixmap penMap(":/pen.png");
     penMap.setDevicePixelRatio(24);
     QCursor c = QCursor(penMap, 0, 0);
@@ -156,8 +153,7 @@ void MainWindow::fillButtonClicked()
     ui->graphicsCanvas->selectionMode(false);
 }
 
-void MainWindow::colorButtonClicked()
-{
+void MainWindow::colorButtonClicked(){
     QColor color = QColorDialog::getColor(Qt::white, this, "Choose Color");
     if (color.isValid())
     {
@@ -169,8 +165,7 @@ void MainWindow::colorButtonClicked()
     }
 }
 
-void MainWindow::selectionButtonClicked()
-{
+void MainWindow::selectionButtonClicked(){
     QPixmap handMap(":/hand.png");
     handMap.setDevicePixelRatio(18);
     QCursor c = QCursor(handMap, 0, 0);
@@ -186,14 +181,14 @@ void MainWindow::clearPage(){
 }
 
 
-void MainWindow::saveDrawing() {
+void MainWindow::saveDrawing(){
     QString filePath = QFileDialog::getSaveFileName(this, tr("Save Drawing"), "", tr("JSON Files (*.json)"));
     if (!filePath.isEmpty()) {
         ui->graphicsCanvas->saveDrawing(filePath);
     }
 }
 
-void MainWindow::loadDrawing() {
+void MainWindow::loadDrawing(){
     QString filePath = QFileDialog::getOpenFileName(this, tr("Open Drawing"), "", tr("JSON Files (*.json)"));
     if (!filePath.isEmpty()) {
         ui->graphicsCanvas->loadDrawing(filePath);
@@ -283,8 +278,7 @@ void MainWindow::skyTheme(){
     //    ui->themePic->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
 }
 
-void MainWindow::on_framePicker_valueChanged(int arg1)
-{
+void MainWindow::on_framePicker_valueChanged(int arg1){
     if(arg1 >=0 && arg1 <=ui->graphicsCanvas->frame)
         ui->graphicsCanvas->framePick(arg1);
     currentFrameIndex = arg1;
@@ -354,8 +348,7 @@ void MainWindow::frameUpdate(int index) {
     }
 }
 
-void MainWindow::on_addFrame_clicked()
-{
+void MainWindow::on_addFrame_clicked(){
     frame++;
     ui->graphicsCanvas->newFrame();
     ui->graphicsCanvas->frameChanged(frame);
@@ -405,9 +398,7 @@ void MainWindow::fpsChanged(int fps){
 
 }
 
-void MainWindow::on_deleteFrame_clicked()
-{
-
+void MainWindow::on_deleteFrame_clicked(){
     // can not delete the last frame
     if(framesViewsList.size() <= 1) {
         return;
@@ -440,8 +431,6 @@ void MainWindow::on_deleteFrame_clicked()
     } else {
         qDebug() << "Invalid frame index";
     }
-
-
 }
 
 void MainWindow::on_spinBox_valueChanged(int value)

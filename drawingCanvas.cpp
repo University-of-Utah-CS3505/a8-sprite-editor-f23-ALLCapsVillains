@@ -230,8 +230,7 @@ void drawingCanvas::drawOnGrid(const QPoint &position) {
     }
 }
 
-void drawingCanvas::fillBucket(QPointF scenePoint, double scaleX, double scaleY)
-{
+void drawingCanvas::fillBucket(QPointF scenePoint, double scaleX, double scaleY) {
     // Select the square above/below or left/right to check and then fill if passes the checks
     scenePoint.setX(scenePoint.x() + scaleX);
     scenePoint.setY(scenePoint.y() + scaleY);
