@@ -48,7 +48,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
     void drawOnGrid(const QPoint &position);
-    void fillBucket(const QPointF, int scaleX, int scaleY);
+    void fillBucket(const QPointF, double scaleX, double scaleY);
     void movePixels(const QPointF);
 
 
