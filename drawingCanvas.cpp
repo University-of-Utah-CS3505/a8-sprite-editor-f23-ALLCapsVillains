@@ -180,7 +180,6 @@ void drawingCanvas::mouseReleaseEvent(QMouseEvent *event) {
         moving = false;
     }
     emit drawingFinish(currentFrameIndex);
-    emit updatePreviewWindow();
 }
 
 void drawingCanvas::Eraserchange(bool state) {

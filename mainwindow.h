@@ -19,7 +19,7 @@ public:
     ~MainWindow();
 
     void changeGridSize();
-    
+
     void previewWindowUpdate();
     void frameUpdate(int index);
     void fpsChanged(int fps);
@@ -35,6 +35,8 @@ private:
     QMap<int,QGraphicsScene*> frames;
     QGraphicsScene *previousScene;
     QGraphicsScene *nextScene;
+
+    bool firstFPS;
 
 public slots:
     void eraseButtonClicked();

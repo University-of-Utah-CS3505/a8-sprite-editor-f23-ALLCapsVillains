@@ -29,12 +29,15 @@ MainWindow::MainWindow(QWidget *parent)
     //add the first frame to the frame list and current index for it
     framesViewsList.append(ui->frame);
     currentFrameIndex = frame;
-      
+
     QMenu * menu = menuBar()->addMenu("File");
     QAction *loadAction = menu->addAction("Load");
     QAction *saveAction = menu->addAction("Save");
     QAction *clear = menu->addAction("Clear");
-      
+
+    ui->addFrame->setDisabled(true);
+    //ui->deleteFrame->setDisabled();
+
     menu->addAction("Save As");
 
 
@@ -102,6 +105,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(dark, &QAction::triggered, this, &MainWindow::darkTheme);
     connect(mocha, &QAction::triggered, this,&MainWindow::mochaTheme);
     connect(sky, &QAction::triggered, this, &MainWindow::skyTheme);
+    firstFPS = true;
+
 
 }
 
@@ -213,10 +218,10 @@ void MainWindow::rojoTheme(){
     mov->start();
     mov->setScaledSize(ui->themePic->size());
     ui->themePic->setMovie(mov);
-//    int w = ui->themePic->width();
-//    int h = ui->themePic->height();
-//    QPixmap pix(":/new/logos/heartiee-removebg-preview.png");
-//    ui->themePic->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
+    //    int w = ui->themePic->width();
+    //    int h = ui->themePic->height();
+    //    QPixmap pix(":/new/logos/heartiee-removebg-preview.png");
+    //    ui->themePic->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
 }
 
 void MainWindow::mochaTheme(){
@@ -251,10 +256,10 @@ void MainWindow::darkTheme(){
     mov->start();
     mov->setScaledSize(ui->themePic->size());
     ui->themePic->setMovie(mov);
-//    int w = ui->themePic->width();
-//    int h = ui->themePic->height();
-//    QPixmap pix(":/new/logos/punkkkkk.jpg");
-//    ui->themePic->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
+    //    int w = ui->themePic->width();
+    //    int h = ui->themePic->height();
+    //    QPixmap pix(":/new/logos/punkkkkk.jpg");
+    //    ui->themePic->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
 }
 
 void MainWindow::skyTheme(){
@@ -273,28 +278,29 @@ void MainWindow::skyTheme(){
     mov->setScaledSize(ui->themePic->size());
 
     ui->themePic->setMovie(mov);
-     ui->themePic->setStyleSheet("(QLabel{border-radius: 25px;}");
+    ui->themePic->setStyleSheet("(QLabel{border-radius: 25px;}");
     //    int w = ui->themePic->width();
-//    int w = ui->themePic->width();
-//    int h = ui->themePic->height();
-//    QPixmap pix(":/new/logos/cloudyy-removebg-preview.png");
-//    ui->themePic->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
+    //    int w = ui->themePic->width();
+    //    int h = ui->themePic->height();
+    //    QPixmap pix(":/new/logos/cloudyy-removebg-preview.png");
+    //    ui->themePic->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
 }
 
 void MainWindow::on_framePicker_valueChanged(int arg1)
 {
     if(arg1 >=0 && arg1 <=ui->graphicsCanvas->frame)
         ui->graphicsCanvas->framePick(arg1);
-        currentFrameIndex = arg1;
+    currentFrameIndex = arg1;
 
 }
 
 void MainWindow::previewWindowUpdate() {
     //check if frames list is empty
-        static int animationIndex = currentFrameIndex; // Static variable to remember the animation frame between timer calls
 
-        // Check if the frames list is empty
-        if (!framesViewsList.isEmpty()) {
+    static int animationIndex = currentFrameIndex; // Static variable to remember the animation frame between timer calls
+
+    // Check if the frames list is empty
+    if (!framesViewsList.isEmpty()) {
         // Get the current scene for animation
         QGraphicsScene* currentScene = framesViewsList[animationIndex]->scene();
 
@@ -306,11 +312,12 @@ void MainWindow::previewWindowUpdate() {
 
         // Increment the animationIndex for the next frame, wrapping around if necessary
         animationIndex = (animationIndex + 1) % framesViewsList.size();
-        }
+    }
 }
 
 //updating the frames part by adding or deleting frames
 void MainWindow::frameUpdate(int index) {
+    ui->addFrame->setDisabled(false);
     //check if drawing and the current frame are valid
     if (ui->graphicsCanvas && framesViewsList[currentFrameIndex]) {
         // Capture contents and the rectangle boundaries of the drawing canvas
@@ -340,6 +347,13 @@ void MainWindow::frameUpdate(int index) {
 
         // Fiting to the current frame
         framesViewsList[currentFrameIndex]->fitInView(frameScene->itemsBoundingRect(), Qt::KeepAspectRatio);
+        if (firstFPS) {
+            //1 second for each
+            previewAnimationTimer->start(1000);
+            ui->fpsLabel->setText("FPS : 1");
+            ui->slider->setValue(1);
+            firstFPS = false;
+        }
     }
 }
 
@@ -373,12 +387,12 @@ void MainWindow::on_addFrame_clicked()
     framesViewsList.append(newFrameView);
 
     //Only has 2 or more frames to start the animation timer
-    if (framesViewsList.size() == 2) {
-        //1 second for each
-        previewAnimationTimer->start(1000);
-        ui->fpsLabel->setText("FPS : 1");
-        ui->slider->setValue(1);
-    }
+    //    if (framesViewsList.size() == 2) {
+    //        //1 second for each
+    //        previewAnimationTimer->start(1000);
+    //        ui->fpsLabel->setText("FPS : 1");
+    //        ui->slider->setValue(1);
+    //    }
 
 }
 
