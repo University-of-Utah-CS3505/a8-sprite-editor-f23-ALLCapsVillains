@@ -19,9 +19,11 @@ public:
     ~MainWindow();
 
     void changeGridSize();
+    
     void previewWindowUpdate();
     void frameUpdate(int index);
     void fpsChanged(int fps);
+    int frame=0;
 
 private:
     Ui::MainWindow *ui;
@@ -40,9 +42,18 @@ private slots:
     void drawButtonClicked();
     void fillButtonClicked();
     void colorButtonClicked();
+
+    void on_spinBox_valueChanged(int arg1);
+    void saveDrawing();
+    void loadDrawing();
+    void rojoTheme();
+    void darkTheme();
+    void skyTheme();
+    void mochaTheme();
+    void clearPage();
     void on_addFrame_clicked();
     void on_deleteFrame_clicked();
-    void on_spinBox_valueChanged(int arg1);
+    void on_framePicker_valueChanged(int arg1);
 };
 
 #endif

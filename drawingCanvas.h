@@ -5,6 +5,10 @@
 #include <QMouseEvent>
 #include <QGraphicsScene>
 #include "GridItem.h"
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QFile>
 
 class drawingCanvas : public QGraphicsView {
     Q_OBJECT
@@ -13,29 +17,32 @@ public:
     explicit drawingCanvas(QWidget *parent = nullptr);
     void Eraserchange(bool state);
     void colorChange(QColor newColor);
-    void drawingMode(bool state);
-    void fillMode(bool state);
-
+  
     //getting the drawing area scene for copy
     QGraphicsScene* getScene();
 
     void addNewFrame();
     void cleanGrids();
-
-    //    void newFrame();
-    //    void frameChanged(int i);
-    //    int frame;
-    //    void framePick(int i);
-    //    void deleteFrame(int i);
-    //    QMap<int,QGraphicsScene*> frames;
-    //void addNewFrame();
     void setCurrentFrame(int index);
     QGraphicsScene* getFrameScene(int index);
     void deleteCurrentFrame();
+    void clear();
 
+    void drawingMode(bool state);
+    void fillMode(bool state);
+
+    void saveDrawing(const QString &filePath);
+    void loadDrawing(const QString &filePath);
+
+    void newFrame();
+    void frameChanged(int i);
+    int frame;
+    void framePick(int i);
+    void deleteFrame(int i);
 
 protected:
-    void drawGrid(double gridDimension);
+    void drawGrid(double newGridDimension);
+
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
@@ -46,12 +53,13 @@ protected:
 
 private:
     QGraphicsScene *scene;
+    QMap<int,QGraphicsScene*> frames ;
     bool drawActive;
     bool eraseActive;
     bool drawMode;
     bool fillActive;
     double gridDimension;
-    QColor color = Qt::black; // default color to black
+    QColor localColor = Qt::black; // default color to black
     QColor colorPrev = Qt::black; // Saves the previous color to go back to
     double scaleFactor;
     QPen pen;
