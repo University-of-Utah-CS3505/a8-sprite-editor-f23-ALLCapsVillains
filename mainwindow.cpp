@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     //add the first frame to the frame list and current index for it
     framesViewsList.append(ui->frame);
-    currentFrameIndex = 0;
+    currentFrameIndex = frame;
       
     QMenu * menu = menuBar()->addMenu("File");
     QAction *loadAction = menu->addAction("Load");
@@ -257,43 +257,34 @@ void MainWindow::on_framePicker_valueChanged(int arg1)
 {
     if(arg1 >=0 && arg1 <=ui->graphicsCanvas->frame)
         ui->graphicsCanvas->framePick(arg1);
+        currentFrameIndex = arg1;
+
 }
 
 void MainWindow::previewWindowUpdate() {
     //check if frames list is empty
-    if (ui->previewWindow && !framesViewsList.isEmpty()) {
-        // gettting the scene from current frame(graphicsview)
-        QGraphicsScene* currentScene = framesViewsList[currentFrameIndex]->scene();
+        static int animationIndex = currentFrameIndex; // Static variable to remember the animation frame between timer calls
 
-        // make the scene to be a Qpixmap as an image to use
-        QPixmap pixmap(currentScene->sceneRect().size().toSize());
-        QPainter painter(&pixmap);
-        currentScene->render(&painter);
+        // Check if the frames list is empty
+        if (!framesViewsList.isEmpty()) {
+        // Get the current scene for animation
+        QGraphicsScene* currentScene = framesViewsList[animationIndex]->scene();
 
-        // Scale the Qpixmap to fit the previw window's size
-        QPixmap scaledPixmap = pixmap.scaled(ui->previewWindow->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        // ... (The rest of your existing code to set up the pixmap and scene)
 
-        QGraphicsScene *previewScene = ui->previewWindow->scene();
-        if (!previewScene) {
-            previewScene = new QGraphicsScene(ui->previewWindow);
-            ui->previewWindow->setScene(previewScene);
+        // Update the preview window with the new scene
+        ui->previewWindow->setScene(currentScene);
+        ui->previewWindow->fitInView(currentScene->itemsBoundingRect(), Qt::KeepAspectRatio);
+
+        // Increment the animationIndex for the next frame, wrapping around if necessary
+        animationIndex = (animationIndex + 1) % framesViewsList.size();
         }
-        //clear it for repopulating it with a new pixmap
-        previewScene->clear();
-
-        // Adding the scaled pixmap to the preview window scene properly
-        previewScene->addPixmap(scaledPixmap);
-        ui->previewWindow->fitInView(previewScene->itemsBoundingRect(), Qt::KeepAspectRatio);
-
-        //Moving to the next frame
-        currentFrameIndex = (currentFrameIndex + 1) % framesViewsList.size();
-    }
 }
 
 //updating the frames part by adding or deleting frames
 void MainWindow::frameUpdate(int index) {
     //check if drawing and the current frame are valid
-    if (ui->graphicsCanvas && framesViewsList[index]) {
+    if (ui->graphicsCanvas && framesViewsList[currentFrameIndex]) {
         // Capture contents and the rectangle boundaries of the drawing canvas
         QGraphicsScene* drawingScene = ui->graphicsCanvas->getScene();
         frames[currentFrameIndex] = drawingScene;
@@ -306,12 +297,12 @@ void MainWindow::frameUpdate(int index) {
         painter.fillRect(pixmap.rect(), Qt::white);
         drawingScene->render(&painter, QRectF(), sceneRectBound);
 
-        QPixmap framePixmap = pixmap.scaled(framesViewsList[index]->viewport()->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        QGraphicsScene *frameScene = framesViewsList[index]->scene();
+        QPixmap framePixmap = pixmap.scaled(framesViewsList[currentFrameIndex]->viewport()->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        QGraphicsScene *frameScene = framesViewsList[currentFrameIndex]->scene();
 
         if (!frameScene) {
-            frameScene = new QGraphicsScene(framesViewsList[index]);
-            framesViewsList[index]->setScene(frameScene);
+            frameScene = new QGraphicsScene(framesViewsList[currentFrameIndex]);
+            framesViewsList[currentFrameIndex]->setScene(frameScene);
         }
         //clear it for repopulating it with a new pixmap
         frameScene->clear();
@@ -320,7 +311,7 @@ void MainWindow::frameUpdate(int index) {
         frameScene->addPixmap(framePixmap);
 
         // Fiting to the current frame
-        framesViewsList[index]->fitInView(frameScene->itemsBoundingRect(), Qt::KeepAspectRatio);
+        framesViewsList[currentFrameIndex]->fitInView(frameScene->itemsBoundingRect(), Qt::KeepAspectRatio);
     }
 }
 
@@ -332,7 +323,7 @@ void MainWindow::on_addFrame_clicked()
     ui->framePicker->setValue(frame);
 
 
-    currentFrameIndex++;
+    //currentFrameIndex = frame;
     //call the addNewFrame method in graphicsCanvs
     ui->graphicsCanvas->addNewFrame();
 
@@ -378,30 +369,39 @@ void MainWindow::fpsChanged(int fps){
 void MainWindow::on_deleteFrame_clicked()
 {
 
-    if(frame>0){
-
-        ui->graphicsCanvas->deleteFrame(frame);
-        frame--;
-        ui->framePicker->setValue(frame);
-        ui->graphicsCanvas->framePick(frame);
-    }
-
-    if (framesViewsList.size() <= 1) {
-        // Optionally, clear the last frame instead of deleting it
+    // can not delete the last frame
+    if(framesViewsList.size() <= 1) {
         return;
     }
 
-    // Assuming currentFrameIndex is the index of the frame to delete
-    QGraphicsView* frameToDelete = framesViewsList.at(currentFrameIndex);
+    // ensure frame  is valid
+    if(frame >= 0 && frame < framesViewsList.size()) {
+        QGraphicsView* frameToDelete = framesViewsList.at(frame);
 
-    // Remove the frame from the UI and delete it
-    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(ui->scrollAreaWidgetContents->layout());
-    layout->removeWidget(frameToDelete);
-    framesViewsList.removeAt(currentFrameIndex);
-    delete frameToDelete;
+        // If the frame to delete is the one currently being displayed
+        if(frame == currentFrameIndex) {
+            // Need to display another frame before deletion
+            currentFrameIndex = (currentFrameIndex - 1 + framesViewsList.size()) % framesViewsList.size();
+            ui->graphicsCanvas->framePick(currentFrameIndex);
+            ui->framePicker->setValue(currentFrameIndex);
+        }
 
-    // Adjust the currentFrameIndex to the previous frame
-    currentFrameIndex = qMax(0, currentFrameIndex - 1);
+        // Remove the frame from the UI and delete it
+        QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(ui->scrollAreaWidgetContents->layout());
+        layout->removeWidget(frameToDelete);
+        framesViewsList.removeAt(frame);
+        delete frameToDelete;
+
+
+        frame = qMax(0, frame - 1);
+
+        // Update the UI to reflect the new state
+        ui->graphicsCanvas->framePick(currentFrameIndex);
+        ui->framePicker->setValue(currentFrameIndex);
+    } else {
+        qDebug() << "Invalid frame index";
+    }
+
 
 }
 
@@ -410,5 +410,7 @@ void MainWindow::on_spinBox_valueChanged(int value)
     //ui->graphicsCanvas->setScene(frames[value]);
     QGraphicsScene *scene = frames[value];
     ui->graphicsCanvas->setScene(scene);
+    currentFrameIndex = value;
+    frame = value;
 }
 
