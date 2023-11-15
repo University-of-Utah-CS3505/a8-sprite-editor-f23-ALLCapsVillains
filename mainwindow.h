@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include<QColorDialog>
+#include<QGraphicsView>
+#include <QTimer>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -17,9 +19,22 @@ public:
     ~MainWindow();
 
     void changeGridSize();
+    
+    void previewWindowUpdate();
+    void frameUpdate(int index);
+    void fpsChanged(int fps);
+    int frame=0;
 
 private:
     Ui::MainWindow *ui;
+    QList<QGraphicsView*> framesViewsList;
+    QTimer* previewAnimationTimer;
+
+    int currentFrameIndex;
+
+    QMap<int,QGraphicsScene*> frames;
+    QGraphicsScene *previousScene;
+    QGraphicsScene *nextScene;
 
 public slots:
     void eraseButtonClicked();
@@ -27,7 +42,20 @@ private slots:
     void drawButtonClicked();
     void fillButtonClicked();
     void colorButtonClicked();
+    
     void selectionButtonClicked();
+
+    void on_spinBox_valueChanged(int arg1);
+    void saveDrawing();
+    void loadDrawing();
+    void rojoTheme();
+    void darkTheme();
+    void skyTheme();
+    void mochaTheme();
+    void clearPage();
+    void on_addFrame_clicked();
+    void on_deleteFrame_clicked();
+    void on_framePicker_valueChanged(int arg1);
 };
 
-#endif // MAINWINDOW_H
+#endif

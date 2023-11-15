@@ -10,11 +10,13 @@ CONFIG += c++17
 
 SOURCES += \
     drawingCanvas.cpp \
+    griditem.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     drawingCanvas.h \
+    griditem.h \
     mainwindow.h
 
 FORMS += \
