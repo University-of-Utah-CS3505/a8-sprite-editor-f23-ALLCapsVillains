@@ -29,9 +29,6 @@ MainWindow::MainWindow(QWidget *parent)
     //add the first frame to the frame list and current index for it
     framesViewsList.append(ui->frame);
     currentFrameIndex = 0;
-
-
-    menu->addAction("Save");
       
     QMenu * menu = menuBar()->addMenu("File");
     QAction *loadAction = menu->addAction("Load");
@@ -94,8 +91,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(previewAnimationTimer, &QTimer::timeout, this, &MainWindow::previewWindowUpdate);
 
     connect(ui->slider, &QSlider::valueChanged, this, &MainWindow::fpsChanged);
-
-    connect(ui->spinBox, &QSpinBox::valueChanged, this, &MainWindow::on_spinBox_valueChanged);
 
     connect(saveAction, &QAction::triggered, this, &MainWindow::saveDrawing);
     connect(loadAction, &QAction::triggered, this, &MainWindow::loadDrawing);
@@ -258,28 +253,6 @@ void MainWindow::skyTheme(){
 //    ui->themePic->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
 }
 
-void MainWindow::on_addFrame_clicked()
-{
-    frame++;
-    ui->graphicsCanvas->newFrame();
-    ui->graphicsCanvas->frameChanged(frame);
-    ui->framePicker->setValue(frame);
-
-}
-
-
-void MainWindow::on_deleteFrame_clicked()
-{
-    if(frame>0){
-
-        ui->graphicsCanvas->deleteFrame(frame);
-        frame--;
-        ui->framePicker->setValue(frame);
-        ui->graphicsCanvas->framePick(frame);
-    }
-}
-
-
 void MainWindow::on_framePicker_valueChanged(int arg1)
 {
     if(arg1 >=0 && arg1 <=ui->graphicsCanvas->frame)
@@ -353,6 +326,12 @@ void MainWindow::frameUpdate(int index) {
 
 void MainWindow::on_addFrame_clicked()
 {
+    frame++;
+    ui->graphicsCanvas->newFrame();
+    ui->graphicsCanvas->frameChanged(frame);
+    ui->framePicker->setValue(frame);
+
+
     currentFrameIndex++;
     //call the addNewFrame method in graphicsCanvs
     ui->graphicsCanvas->addNewFrame();
@@ -398,6 +377,15 @@ void MainWindow::fpsChanged(int fps){
 
 void MainWindow::on_deleteFrame_clicked()
 {
+
+    if(frame>0){
+
+        ui->graphicsCanvas->deleteFrame(frame);
+        frame--;
+        ui->framePicker->setValue(frame);
+        ui->graphicsCanvas->framePick(frame);
+    }
+
     if (framesViewsList.size() <= 1) {
         // Optionally, clear the last frame instead of deleting it
         return;

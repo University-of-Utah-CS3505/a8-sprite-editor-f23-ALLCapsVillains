@@ -35,7 +35,7 @@ drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent), gridItem(
 
     this->setSceneRect(5, 5, scene->width(), scene->height());
 
-    drawGrid(startGridDimension);
+    drawGrid(gridDimension);
     //sam
     frames.insert(0,scene);
 }
@@ -50,7 +50,7 @@ void drawingCanvas::newFrame(){
 void drawingCanvas::frameChanged(int i){
     this->setScene(frames.value(i));
     scene = frames.value(i);
-    drawGrid();
+    drawGrid(gridDimension);
 
 }
 void drawingCanvas::framePick(int i){
@@ -115,7 +115,7 @@ void drawingCanvas::drawGrid(double newGridDimension) {
 void drawingCanvas::gridSizeChanged(int newSize) {
     gridDimension = newSize;
 
-    drawGrid();
+    drawGrid(gridDimension);
 }
 
 // mouse clic
@@ -180,7 +180,7 @@ void drawingCanvas::drawOnGrid(const QPoint &position) {
     int gridY = static_cast<int>(floor(scenePoint.y() / scaleFactor));
     QPoint gridPos(gridX, gridY);
 
-    QColor currentColor = eraseActive ? Qt::transparent : color;
+    QColor currentColor = Qt::transparent;
     drawingState[gridPos] = currentColor; // Update the visible drawing state
 
     // Also update the full-resolution drawing state
@@ -253,7 +253,7 @@ void drawingCanvas::addNewFrame() {
 
 void drawingCanvas::clear(){
     scene->clear();
-    drawGrid();
+    drawGrid(gridDimension);
 }
 
 
