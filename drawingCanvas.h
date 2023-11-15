@@ -30,6 +30,7 @@ public:
 
     void drawingMode(bool state);
     void fillMode(bool state);
+    void selectionMode(bool state);
 
     void saveDrawing(const QString &filePath);
     void loadDrawing(const QString &filePath);
@@ -48,20 +49,28 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void drawOnGrid(const QPoint &position);
     void fillBucket(const QPointF, int scaleX, int scaleY);
+    void movePixels(const QPointF);
 
 
 
 private:
     QGraphicsScene *scene;
     QMap<int,QGraphicsScene*> frames ;
+
+    bool toolActive;
     bool drawActive;
     bool eraseActive;
-    bool drawMode;
     bool fillActive;
+    bool selectionActive;
+
+    bool moving;
+    QPointF lastMousePosition;
+
     double gridDimension;
     QColor localColor = Qt::black; // default color to black
     QColor colorPrev = Qt::black; // Saves the previous color to go back to
     double scaleFactor;
+
     QPen pen;
     QBrush brush;
     GridItem *gridItem;

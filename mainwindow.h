@@ -42,6 +42,7 @@ private slots:
     void drawButtonClicked();
     void fillButtonClicked();
     void colorButtonClicked();
+    void selectionButtonClicked();
 
     void on_spinBox_valueChanged(int arg1);
     void saveDrawing();
