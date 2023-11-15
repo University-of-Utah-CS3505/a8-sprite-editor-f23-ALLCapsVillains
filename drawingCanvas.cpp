@@ -274,7 +274,7 @@ void drawingCanvas::cleanGrids() {
     for (auto &item : scene->items()) {
         QGraphicsRectItem *rect = qgraphicsitem_cast<QGraphicsRectItem*>(item);
         if (rect) {
-            rect->setBrush(QBrush(Qt::white));
+            rect->setBrush(QBrush(Qt::transparent));
         }
     }
 }
