@@ -7,8 +7,17 @@
 
 #include<QDebug>
 
-drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
+drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent), gridItem(nullptr) {
     scene = new QGraphicsScene(this);
+
+    pen = QPen(Qt::gray);
+    pen.setWidth(0);
+    brush = QBrush(Qt::transparent);
+
+    gridItem = new GridItem(gridDimension);
+    scene->addItem(gridItem);
+
+    currentFrameIndex = 0;
 
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -26,9 +35,8 @@ drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
 
     this->setSceneRect(5, 5, scene->width(), scene->height());
 
-    drawGrid();
-
-    //Other initialization code
+    drawGrid(gridDimension);
+    //sam
     frames.insert(0,scene);
 }
 
@@ -42,7 +50,7 @@ void drawingCanvas::newFrame(){
 void drawingCanvas::frameChanged(int i){
     this->setScene(frames.value(i));
     scene = frames.value(i);
-    drawGrid();
+    drawGrid(gridDimension);
 
 }
 void drawingCanvas::framePick(int i){
@@ -62,29 +70,52 @@ void drawingCanvas::deleteFrame(int i){
 
 }
 
-void drawingCanvas::drawGrid() {
+void drawingCanvas::drawGrid(double newGridDimension) {
+    // Calculate the new scale factor based on the new grid dimension
+    double newScaleFactor = this->width() / newGridDimension;
 
-    scaleFactor = this->width() / gridDimension;
-    // Clear the old grids
+    // Clear the current grid from the scene
     scene->clear();
 
+    // Create the new grid based on the new grid dimension
+    for (int x = 0; x < newGridDimension; ++x) {
+        for (int y = 0; y < newGridDimension; ++y) {
+            scene->addRect(x * newScaleFactor, y * newScaleFactor, newScaleFactor, newScaleFactor, pen, brush);
+        }
+    }
+
+    // Use the full-resolution drawing state to redraw the visible cells
+    QHash<QPoint, QColor> visibleDrawingState; // Stores the visible state after resizing
+    for (const QPoint &point : fullResolutionDrawingState.keys()) {
+        int scaledX = static_cast<int>(point.x() * (newScaleFactor / scaleFactor));
+        int scaledY = static_cast<int>(point.y() * (newScaleFactor / scaleFactor));
+
+        if (scaledX < newGridDimension && scaledY < newGridDimension) {
+            // The cell is visible in the new grid
+            visibleDrawingState[QPoint(scaledX, scaledY)] = fullResolutionDrawingState[point];
 
     QPen pen(Qt::gray);
     pen.setWidth(0);
     QBrush brush(Qt::transparent);
 
-    //filling all grids
-    for (int x = 0; x <= gridDimension; x++) {
-        for (int y = 0; y <= gridDimension; y++) {
-            scene->addRect(x * scaleFactor, y * scaleFactor, scaleFactor, scaleFactor, pen, brush);
+            QGraphicsRectItem *rect = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scaledX * newScaleFactor, scaledY * newScaleFactor, QTransform()));
+            if (rect) {
+                rect->setBrush(QBrush(fullResolutionDrawingState[point]));
+            }
         }
     }
+
+
+    // Update the visible drawing state
+    drawingState = visibleDrawingState;
+    scaleFactor = newScaleFactor; // Update the scale factor
+    gridDimension = newGridDimension; // Update the grid dimension
 }
 
 void drawingCanvas::gridSizeChanged(int newSize) {
     gridDimension = newSize;
 
-    drawGrid();
+    drawGrid(gridDimension);
 }
 
 // mouse clic
@@ -117,6 +148,8 @@ void drawingCanvas::mouseMoveEvent(QMouseEvent *event) {
 // mouse release
 void drawingCanvas::mouseReleaseEvent(QMouseEvent *event) {
     drawActive = false;
+    emit drawingFinish(currentFrameIndex);
+    emit updatePreviewWindow();
 }
 
 void drawingCanvas::Eraserchange(bool state) {
@@ -142,10 +175,17 @@ void drawingCanvas::colorChange(QColor newColor)
 
 // draw colors on the grids
 void drawingCanvas::drawOnGrid(const QPoint &position) {
-    //find the view coordinate corresponding to the mouse location
     QPointF scenePoint = mapToScene(position);
+    int gridX = static_cast<int>(floor(scenePoint.x() / scaleFactor));
+    int gridY = static_cast<int>(floor(scenePoint.y() / scaleFactor));
+    QPoint gridPos(gridX, gridY);
 
-    //find the current the grid we chosed and change its color
+    QColor currentColor = Qt::transparent;
+    drawingState[gridPos] = currentColor; // Update the visible drawing state
+
+    // Also update the full-resolution drawing state
+    fullResolutionDrawingState[gridPos] = currentColor;
+
     QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
     if (currentGrid) {
         //change its color transparent or previous color based on if erase is active
@@ -191,11 +231,30 @@ void drawingCanvas::fillBucket(QPointF scenePoint, int scaleX, int scaleY)
     fillBucket(scenePoint, 0, scaleFactor);
     fillBucket(scenePoint, 0, -scaleFactor);
 }
-void drawingCanvas::clear(){
-    scene->clear();
-    drawGrid();
+
+//getting the drawing area scene for copying to preview window
+QGraphicsScene* drawingCanvas::getScene() {
+    return scene;
 }
 
+// just clean the grids
+void drawingCanvas::cleanGrids() {
+    for (auto &item : scene->items()) {
+        QGraphicsRectItem *rect = qgraphicsitem_cast<QGraphicsRectItem*>(item);
+        if (rect) {
+            rect->setBrush(QBrush(Qt::white));
+        }
+    }
+}
+void drawingCanvas::addNewFrame() {
+    cleanGrids();
+    currentFrameIndex ++;
+}
+
+void drawingCanvas::clear(){
+    scene->clear();
+    drawGrid(gridDimension);
+}
 
 
 void drawingCanvas::saveDrawing(const QString &filePath) {
