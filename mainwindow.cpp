@@ -83,6 +83,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->fill, &QPushButton::clicked, this, &MainWindow::fillButtonClicked);
     connect(ui->colorBtn, &QPushButton::clicked, this, &MainWindow::colorButtonClicked);
     connect(ui->selection, &QPushButton::clicked, this, &MainWindow::selectionButtonClicked);
+    connect(ui->cursor, &QPushButton::clicked, this, &MainWindow::cursorButtonClicked);
 
 
     //when the drawing is finished, the preview window will show the scene
@@ -173,6 +174,16 @@ void MainWindow::selectionButtonClicked(){
     ui->graphicsCanvas->drawingMode(false);
     ui->graphicsCanvas->fillMode(false);
     ui->graphicsCanvas->selectionMode(true);
+}
+
+void MainWindow::cursorButtonClicked()
+{
+    QCursor c;
+    c.setShape(Qt::ArrowCursor);
+    setCursor(c);
+    ui->graphicsCanvas->drawingMode(false);
+    ui->graphicsCanvas->fillMode(false);
+    ui->graphicsCanvas->selectionMode(false);
 }
 
 void MainWindow::clearPage(){
