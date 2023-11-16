@@ -1,15 +1,16 @@
 /*
  *Main Class
- *Created by Christian Hartman and Jacob Crane
- *Assignment 6: QT Simon Game
+ *Created by Alex Qi, Matthew Goh, Sam Onwukeme, Yujie He, Jake Crane,  ZengZheng Jiang
+ *Assignment 8: Sprite Editor (ZFX 1.0)
  *
  * Jake Github: @jakecolacoo
- * Christian Github: @Is-This-One-Avaiable
+ * Alex Github: @Qibola
+ * Matt Github: @Mattgoh
+ * Sam Github: @reignoverall
+ * Mario Github: @Mariohyj
+ * Constantine Github: @CycleBird
  *
- * Creative Element: We implemented difficulty modes that the user can select at the beginning of the turn.
- * Selecting higher difficulties will increase the initial number of flashes in the sequence and increases
- * the number of flashes added to the sequence every round. The speed of the flashes are sped up accordingly
- * to appropriately set the game's pace.
+ * Style Reviewed by Constantine.
 */
 
 #include "mainwindow.h"

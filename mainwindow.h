@@ -2,6 +2,8 @@
  *Main Window View
  *Created by Alex Qi, Matthew Goh, Sam Onwukeme, Yujie He, Jake Crane,  ZengZheng Jiang
  *Assignment 8: Sprite Editor (ZFX 1.0)
+ *
+ *Style Reviewed by Sam.
  */
 
 #ifndef MAINWINDOW_H
@@ -180,12 +182,6 @@ private slots:
      * \brief mochaTheme Applies the Mocha theme
      */
     void mochaTheme();
-
-    /*!
-     * \brief clearPage Clears the current page
-     */
-    void clearPage();
-
 
     /*!
      * \brief cleanFrame Cleans the current frame

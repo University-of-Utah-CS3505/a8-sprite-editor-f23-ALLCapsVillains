@@ -2,6 +2,8 @@
  *Drawing Model Class
  *Created by Alex Qi, Matthew Goh, Sam Onwukeme, Yujie He, Jake Crane,  ZengZheng Jiang
  *Assignment 8: Sprite Editor (ZFX 1.0)
+ *
+ *Style Reviewed by Matt.
  */
 
 #include "drawingCanvas.h"

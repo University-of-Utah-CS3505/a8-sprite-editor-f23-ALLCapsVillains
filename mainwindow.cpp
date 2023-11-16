@@ -2,6 +2,8 @@
  *Main Window View Class
  *Created by Alex Qi, Matthew Goh, Sam Onwukeme, Yujie He, Jake Crane,  ZengZheng Jiang
  *Assignment 8: Sprite Editor (ZFX 1.0)
+ *
+ *Style Reviewed by Mario.
  */
 
 
@@ -39,7 +41,6 @@ MainWindow::MainWindow(QWidget *parent)
     QMenu * menu = menuBar()->addMenu("File");
     QAction *loadAction = menu->addAction("Load");
     QAction *saveAction = menu->addAction("Save");
-    QAction *clear = menu->addAction("Clear");
 
     ui->addFrame->setDisabled(true);
     ui->deleteFrame->setDisabled(true);
@@ -96,7 +97,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(saveAction, &QAction::triggered, this, &MainWindow::saveDrawing);
     connect(loadAction, &QAction::triggered, this, &MainWindow::loadDrawing);
-    connect(clear, &QAction::triggered, this, &MainWindow::clearPage);
 
     connect(rojo, &QAction::triggered,this,&MainWindow::rojoTheme);
     connect(dark, &QAction::triggered, this, &MainWindow::darkTheme);
@@ -184,11 +184,6 @@ void MainWindow::cursorButtonClicked()
     ui->graphicsCanvas->fillMode(false);
     ui->graphicsCanvas->selectionMode(false);
 }
-
-void MainWindow::clearPage(){
-    ui->graphicsCanvas->clear();
-}
-
 
 void MainWindow::saveDrawing() {
     QString filePath = QFileDialog::getSaveFileName(this, tr("Save Drawing"), "", tr("Sprite Sheet Project Files (*.ssp)"));

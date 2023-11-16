@@ -2,6 +2,8 @@
  *Drawing Model Header
  *Created by Alex Qi, Matthew Goh, Sam Onwukeme, Yujie He, Jake Crane,  ZengZheng Jiang
  *Assignment 8: Sprite Editor (ZFX 1.0)
+ *
+ *Style reviewed by Alex and Jake
  */
 
 #ifndef DRAWINGCANVAS_H
