@@ -1,3 +1,9 @@
+/*
+ *Drawing Model Class
+ *Created by Alex Qi, Matthew Goh, Sam Onwukeme, Yujie He, Jake Crane,  ZengZheng Jiang
+ *Assignment 8: Sprite Editor (ZFX 1.0)
+ */
+
 #include "drawingCanvas.h"
 #include <QGraphicsItem>
 #include <QJsonArray>
@@ -15,7 +21,7 @@ drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
     brush = QBrush(Qt::transparent);
 
     currentFrameIndex = 0;
-    frame = 0;
+    numberOfFrames = 0;
 
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -33,22 +39,22 @@ drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
 
     this->setSceneRect(5, 5, scene->width(), scene->height());
 
-    drawGrid(gridDimension);
+    drawGrid();
     //sam
     frames.insert(0,scene);
 }
 
 
 void drawingCanvas::newFrame(){
-    frame++;
+    numberOfFrames++;
     QGraphicsScene* frameAdded = new QGraphicsScene(this);
-    frames.insert(frame,frameAdded);
+    frames.insert(numberOfFrames,frameAdded);
 }
 
 void drawingCanvas::frameChanged(int i){
     this->setScene(frames.value(i));
     scene = frames.value(i);
-    drawGrid(gridDimension);
+    drawGrid();
 
 }
 void drawingCanvas::framePick(int i){
@@ -59,7 +65,7 @@ void drawingCanvas::framePick(int i){
 
 void drawingCanvas::deleteFrame(int i){
     if(frames.count() > 0){
-        frame--;
+        numberOfFrames--;
 
     this->setScene(frames.value(i-1));
     scene = frames.value(i-1);
@@ -73,16 +79,16 @@ void drawingCanvas::selectionMode(bool state)
     selectionActive = state;
 }
 
-void drawingCanvas::drawGrid(double newGridDimension) {
+void drawingCanvas::drawGrid() {
     // Calculate the new scale factor based on the new grid dimension
-    double newScaleFactor = this->width() / newGridDimension;
+    double newScaleFactor = this->width() / gridDimension;
 
     // Clear the current grid from the scene
     scene->clear();
 
     // Create the new grid based on the new grid dimension
-    for (int x = 0; x < newGridDimension; ++x) {
-        for (int y = 0; y < newGridDimension; ++y) {
+    for (int x = 0; x < gridDimension; ++x) {
+        for (int y = 0; y < gridDimension; ++y) {
             scene->addRect(x * newScaleFactor, y * newScaleFactor, newScaleFactor, newScaleFactor, pen, brush);
         }
     }
@@ -93,7 +99,7 @@ void drawingCanvas::drawGrid(double newGridDimension) {
         int scaledX = static_cast<int>(point.x() * (newScaleFactor / scaleFactor));
         int scaledY = static_cast<int>(point.y() * (newScaleFactor / scaleFactor));
 
-        if (scaledX < newGridDimension && scaledY < newGridDimension) {
+        if (scaledX < gridDimension && scaledY < gridDimension) {
             // The cell is visible in the new grid
             visibleDrawingState[QPoint(scaledX, scaledY)] = fullResolutionDrawingState[point];
 
@@ -110,15 +116,13 @@ void drawingCanvas::drawGrid(double newGridDimension) {
 
 
     // Update the visible drawing state
-    drawingState = visibleDrawingState;
+    colorState = visibleDrawingState;
     scaleFactor = newScaleFactor; // Update the scale factor
-    gridDimension = newGridDimension; // Update the grid dimension
 }
 
 void drawingCanvas::gridSizeChanged(int newSize) {
     gridDimension = newSize;
-
-    drawGrid(gridDimension);
+    drawGrid();
 }
 
 // mouse clic
@@ -180,7 +184,7 @@ void drawingCanvas::mouseReleaseEvent(QMouseEvent *event) {
     emit drawingFinish(currentFrameIndex);
 }
 
-void drawingCanvas::Eraserchange(bool state) {
+void drawingCanvas::eraserChange(bool state) {
     //change the erase active status, when click the erase button
     eraseActive = state;
 }
@@ -209,7 +213,7 @@ void drawingCanvas::drawOnGrid(const QPoint &position) {
     QPoint gridPos(gridX, gridY);
 
     QColor currentColor = Qt::transparent;
-    drawingState[gridPos] = currentColor; // Update the visible drawing state
+    colorState[gridPos] = currentColor; // Update the visible drawing state
 
     // Also update the full-resolution drawing state
     fullResolutionDrawingState[gridPos] = currentColor;
@@ -281,7 +285,7 @@ void drawingCanvas::addNewFrame() {
 
 void drawingCanvas::clear(){
     scene->clear();
-    drawGrid(gridDimension);
+    drawGrid();
 }
 
 void drawingCanvas::movePixels(QPointF delta)
@@ -345,6 +349,7 @@ void drawingCanvas::saveDrawing(const QString &filePath) {
 
     QJsonObject jsonObject;
     jsonObject["frames"] = framesArray;
+    jsonObject["gridDimension"] = gridDimension;
 
     QFile file(filePath);
     if (file.open(QIODevice::WriteOnly)) {
@@ -365,7 +370,11 @@ void drawingCanvas::loadDrawing(const QString &filePath) {
 
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     QJsonObject jsonObject = doc.object();
+
+    gridDimension = jsonObject["gridDimension"].toInt();
     QJsonArray framesArray = jsonObject["frames"].toArray();
+
+    gridSizeChanged(gridDimension);
 
     scaleFactor = this->width() / gridDimension;
 
@@ -374,11 +383,11 @@ void drawingCanvas::loadDrawing(const QString &filePath) {
     }
     frames.clear();
     currentFrameIndex = 0;
-    frame = -1;
+    numberOfFrames = -1;
     emit cleanFrame();
 
     for (const QJsonValue &frameVal : framesArray) {
-        frame++;
+        numberOfFrames++;
         QGraphicsScene* newScene = new QGraphicsScene(this);
 
         QJsonObject frameObject = frameVal.toObject();
@@ -397,7 +406,7 @@ void drawingCanvas::loadDrawing(const QString &filePath) {
             }
         }
 
-        frames.insert(frame, newScene);
+        frames.insert(numberOfFrames, newScene);
         if(currentFrameIndex != 0){
             emit addFrame();
         } else {

@@ -1,3 +1,10 @@
+/*
+ *Main Window View Class
+ *Created by Alex Qi, Matthew Goh, Sam Onwukeme, Yujie He, Jake Crane,  ZengZheng Jiang
+ *Assignment 8: Sprite Editor (ZFX 1.0)
+ */
+
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include<QDebug>
@@ -44,9 +51,8 @@ MainWindow::MainWindow(QWidget *parent)
     QAction* sky = menu->addAction("Sky");
     QAction* mocha = menu->addAction("Mocha");
 
-//    ui->scrollArea->ho
 
-//    ui->scrollArea->horizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
 
     connect(ui->gridSizeSldr, &QSlider::valueChanged, this, &MainWindow::changeGridSize);
@@ -71,13 +77,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui->selection->setIcon(handIcon);
 
     ui->colorBtn->setStyleSheet("background-color: black"); // default color to black
-    //ui->colorborder->setStyleSheet("background-color: white");
     connect(ui->erase, &QPushButton::clicked, this, &MainWindow::eraseButtonClicked);
     connect(ui->draw, &QPushButton::clicked, this, &MainWindow::drawButtonClicked);
     connect(ui->fill, &QPushButton::clicked, this, &MainWindow::fillButtonClicked);
     connect(ui->colorBtn, &QPushButton::clicked, this, &MainWindow::colorButtonClicked);
     connect(ui->selection, &QPushButton::clicked, this, &MainWindow::selectionButtonClicked);
-    //connect(ui->cursor, &QPushButton::clicked, this, &MainWindow::cursorButtonClicked);
 
 
     //when the drawing is finished, the preview window will show the scene
@@ -100,8 +104,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(sky, &QAction::triggered, this, &MainWindow::skyTheme);
     firstFPS = true;
 
-    connect(ui->graphicsCanvas, &drawingCanvas::cleanFrame, this, &MainWindow::cleamFrame);
-    connect(ui->graphicsCanvas, &drawingCanvas::addFrame, this, &MainWindow::addFrame);
+    connect(ui->graphicsCanvas, &drawingCanvas::cleanFrame, this, &MainWindow::cleanFrames);
+    connect(ui->graphicsCanvas, &drawingCanvas::addFrame, this, &MainWindow::saveFrame);
 }
 
 MainWindow::~MainWindow(){
@@ -126,7 +130,7 @@ void MainWindow::eraseButtonClicked(){
     //Active to be not active, or reverse.
     ui->graphicsCanvas->drawingMode(true);
     ui->graphicsCanvas->fillMode(false);
-    ui->graphicsCanvas->Eraserchange(true);
+    ui->graphicsCanvas->eraserChange(true);
     ui->graphicsCanvas->selectionMode(false);
 }
 
@@ -136,7 +140,7 @@ void MainWindow::drawButtonClicked(){
     ui->currentTool->setIcon(icon);
     ui->graphicsCanvas->drawingMode(true);
     ui->graphicsCanvas->fillMode(false);
-    ui->graphicsCanvas->Eraserchange(false);
+    ui->graphicsCanvas->eraserChange(false);
     ui->graphicsCanvas->selectionMode(false);
 }
 
@@ -206,7 +210,6 @@ void MainWindow::rojoTheme(){
     ui->draw->setStyleSheet("background-color: rgb(245, 127, 213)");
     ui->erase->setStyleSheet("background-color: rgb(245, 127, 213)");
     ui->fill->setStyleSheet("background-color: rgb(245, 127, 213)");
-    //ui->cursor->setStyleSheet("background-color: rgb(245, 127, 213)");
     ui->selection->setStyleSheet("background-color: rgb(245, 127, 213)");
     ui->addFrame->setStyleSheet("background-color: rgb(245, 127, 213)");
     ui->deleteFrame->setStyleSheet("background-color: rgb(245, 127, 213)");
@@ -218,10 +221,6 @@ void MainWindow::rojoTheme(){
     mov->start();
     mov->setScaledSize(ui->themePic->size());
     ui->themePic->setMovie(mov);
-    //    int w = ui->themePic->width();
-    //    int h = ui->themePic->height();
-    //    QPixmap pix(":/new/logos/heartiee-removebg-preview.png");
-    //    ui->themePic->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
 }
 
 void MainWindow::mochaTheme(){
@@ -230,7 +229,6 @@ void MainWindow::mochaTheme(){
     ui->draw->setStyleSheet("background-color: rgb(219, 209, 156)");
     ui->erase->setStyleSheet("background-color: rgb(219, 209, 156)");
     ui->fill->setStyleSheet("background-color: rgb(219, 209, 156)");
-    //ui->cursor->setStyleSheet("background-color: rgb(219, 209, 156)");
     ui->selection->setStyleSheet("background-color: rgb(219, 209, 156)");
     ui->addFrame->setStyleSheet("background-color: rgb(219, 209, 156)");
     ui->deleteFrame->setStyleSheet("background-color: rgb(219, 209, 156)");
@@ -251,7 +249,6 @@ void MainWindow::darkTheme(){
     ui->erase->setStyleSheet("background-color: rgb(18, 255, 105)");
     ui->fill->setStyleSheet("background-color: rgb(219, 18, 255)");
     ui->selection->setStyleSheet("background-color: rgb(18, 255, 105)");
-    //ui->cursor->setStyleSheet("background-color: rgb(18, 255, 105)");
     ui->addFrame->setStyleSheet("background-color: rgb(219, 18, 255)");
     ui->deleteFrame->setStyleSheet("background-color: rgb(18, 255, 105)");
     ui->previewWindow->setStyleSheet("background-color: rgb(255, 255, 255)");
@@ -263,10 +260,6 @@ void MainWindow::darkTheme(){
     mov->start();
     mov->setScaledSize(ui->themePic->size());
     ui->themePic->setMovie(mov);
-    //    int w = ui->themePic->width();
-    //    int h = ui->themePic->height();
-    //    QPixmap pix(":/new/logos/punkkkkk.jpg");
-    //    ui->themePic->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
 }
 
 void MainWindow::skyTheme(){
@@ -276,7 +269,6 @@ void MainWindow::skyTheme(){
     ui->erase->setStyleSheet("background-color: rgb(255,255,255)");
     ui->fill->setStyleSheet("background-color: rgb(255,255,255)");
     ui->selection->setStyleSheet("background-color: rgb(255,255,255)");
-    //ui->cursor->setStyleSheet("background-color: rgb(255,255,255)");
     ui->addFrame->setStyleSheet("background-color: rgb(255,255,255)");
     ui->deleteFrame->setStyleSheet("background-color: rgb(255,255,255)");
     ui->previewWindow->setStyleSheet("background-color: rgb(255, 255, 255)");
@@ -289,15 +281,10 @@ void MainWindow::skyTheme(){
 
     ui->themePic->setMovie(mov);
     ui->themePic->setStyleSheet("(QLabel{border-radius: 25px;}");
-    //    int w = ui->themePic->width();
-    //    int w = ui->themePic->width();
-    //    int h = ui->themePic->height();
-    //    QPixmap pix(":/new/logos/cloudyy-removebg-preview.png");
-    //    ui->themePic->setPixmap(pix.scaled(w,h,Qt::KeepAspectRatio));
 }
 
 void MainWindow::on_framePicker_valueChanged(int arg1){
-    if(arg1 >=0 && arg1 <=ui->graphicsCanvas->frame)
+    if(arg1 >=0 && arg1 <=ui->graphicsCanvas->numberOfFrames)
         ui->graphicsCanvas->framePick(arg1);
     currentFrameIndex = arg1;
 
@@ -325,7 +312,7 @@ void MainWindow::previewWindowUpdate() {
 }
 
 //updating the frames part by adding or deleting frames
-void MainWindow::frameUpdate(int index) {
+void MainWindow::frameUpdate() {
     ui->addFrame->setDisabled(false);
     //check if drawing and the current frame are valid
     if (ui->graphicsCanvas && framesViewsList[currentFrameIndex]) {
@@ -466,13 +453,13 @@ void MainWindow::on_spinBox_valueChanged(int value)
 }
 
 // clean the frame number
-void MainWindow::cleamFrame(){
+void MainWindow::cleanFrames(){
     while(framesViewsList.size() > 1){
         on_deleteFrame_clicked();
     }
 }
 
-void MainWindow::addFrame(){
+void MainWindow::saveFrame(){
     frame ++;
 
     ui->framePicker->setMaximum(frame);
