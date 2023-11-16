@@ -1,3 +1,9 @@
+/*
+ *Drawing Model Class
+ *Created by Alex Qi, Matthew Goh, Sam Onwukeme, Yujie He, Jake Crane,  ZengZheng Jiang
+ *Assignment 8: Sprite Editor (ZFX 1.0)
+ */
+
 #include "drawingCanvas.h"
 #include <QGraphicsItem>
 #include <QJsonArray>
@@ -9,6 +15,13 @@
 
 drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
     scene = new QGraphicsScene(this);
+
+    pen = QPen(Qt::gray);
+    pen.setWidth(0);
+    brush = QBrush(Qt::transparent);
+
+    currentFrameIndex = 0;
+    numberOfFrames = 0;
 
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -27,26 +40,84 @@ drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
     this->setSceneRect(5, 5, scene->width(), scene->height());
 
     drawGrid();
-    //Other initialization code
+    //sam
+    frames.insert(0,scene);
 }
 
 
-void drawingCanvas::drawGrid() {
+void drawingCanvas::newFrame(){
+    numberOfFrames++;
+    QGraphicsScene* frameAdded = new QGraphicsScene(this);
+    frames.insert(numberOfFrames,frameAdded);
+}
 
-    scaleFactor = this->width() / gridDimension;
-    // Clear the old grids
+void drawingCanvas::frameChanged(int i){
+    this->setScene(frames.value(i));
+    scene = frames.value(i);
+    drawGrid();
+
+}
+void drawingCanvas::framePick(int i){
+    this->setScene(frames.value(i));
+    scene = frames.value(i);
+
+}
+
+void drawingCanvas::deleteFrame(int i){
+    if(frames.count() > 0){
+        numberOfFrames--;
+
+    this->setScene(frames.value(i-1));
+    scene = frames.value(i-1);
+
+    }
+
+}
+
+void drawingCanvas::selectionMode(bool state)
+{
+    selectionActive = state;
+}
+
+void drawingCanvas::drawGrid() {
+    // Calculate the new scale factor based on the new grid dimension
+    double newScaleFactor = this->width() / gridDimension;
+
+    // Clear the current grid from the scene
     scene->clear();
 
-    QPen pen(Qt::gray);
+    // Create the new grid based on the new grid dimension
+    for (int x = 0; x < gridDimension; ++x) {
+        for (int y = 0; y < gridDimension; ++y) {
+            scene->addRect(x * newScaleFactor, y * newScaleFactor, newScaleFactor, newScaleFactor, pen, brush);
+        }
+    }
+
+    // Use the full-resolution drawing state to redraw the visible cells
+    QHash<QPoint, QColor> visibleDrawingState; // Stores the visible state after resizing
+    for (const QPoint &point : fullResolutionDrawingState.keys()) {
+        int scaledX = static_cast<int>(point.x() * (newScaleFactor / scaleFactor));
+        int scaledY = static_cast<int>(point.y() * (newScaleFactor / scaleFactor));
+
+        if (scaledX < gridDimension && scaledY < gridDimension) {
+            // The cell is visible in the new grid
+            visibleDrawingState[QPoint(scaledX, scaledY)] = fullResolutionDrawingState[point];
+
+    QPen pen(Qt::black);
     pen.setWidth(0);
     QBrush brush(Qt::transparent);
 
-    //filling all grids
-    for (int x = 0; x <= gridDimension; x++) {
-        for (int y = 0; y <= gridDimension; y++) {
-            scene->addRect(x * scaleFactor, y * scaleFactor, scaleFactor, scaleFactor, pen, brush);
+            QGraphicsRectItem *rect = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scaledX * newScaleFactor, scaledY * newScaleFactor, QTransform()));
+            if (rect) {
+                rect->setBrush(QBrush(fullResolutionDrawingState[point]));
+            }
         }
     }
+
+
+    // Update the visible drawing state
+    colorState = visibleDrawingState;
+    scaleFactor = newScaleFactor; // Update the scale factor
 }
 
 void drawingCanvas::gridSizeChanged(int newSize) {
@@ -56,8 +127,8 @@ void drawingCanvas::gridSizeChanged(int newSize) {
 
 // mouse clic
 void drawingCanvas::mousePressEvent(QMouseEvent *event) {
-    drawActive = true;
-    if (drawMode)
+    toolActive = true;
+    if (drawActive)
     {
         drawOnGrid(event->pos());
     }
@@ -67,33 +138,60 @@ void drawingCanvas::mousePressEvent(QMouseEvent *event) {
         QPointF fillPoint = mapToScene(event->pos());
         fillBucket(fillPoint, 0, 0);
     }
+
+    if (selectionActive)
+    {
+        moving = true;
+        lastMousePosition = mapToScene(event->pos());
+    }
 }
 
 // mouse drag
 void drawingCanvas::mouseMoveEvent(QMouseEvent *event) {
-    if (drawActive && drawMode) {
+    if (toolActive && drawActive) {
         drawOnGrid(event->pos());
     }
-    if (drawActive && fillActive)
+
+    if (toolActive && fillActive)
     {
         QPointF fillPoint = mapToScene(event->pos());
         fillBucket(fillPoint, 0, 0);
+    }
+
+    if (toolActive && selectionActive)
+    {
+        if (moving)
+        {
+            QPointF delta = mapToScene(event->pos()) - lastMousePosition;
+
+            if (delta.x() >= scaleFactor || delta.x() <= -scaleFactor || delta.y() >= scaleFactor || delta.y() <= -scaleFactor)
+            {
+                movePixels(delta);
+                lastMousePosition = mapToScene(event->pos());
+            }
+        }
     }
 }
 
 // mouse release
 void drawingCanvas::mouseReleaseEvent(QMouseEvent *event) {
-    drawActive = false;
+    toolActive = false;
+
+    if (moving)
+    {
+        moving = false;
+    }
+    emit drawingFinish(currentFrameIndex);
 }
 
-void drawingCanvas::Eraserchange(bool state) {
+void drawingCanvas::eraserChange(bool state) {
     //change the erase active status, when click the erase button
     eraseActive = state;
 }
 
 void drawingCanvas::drawingMode(bool state) {
     //change the erase active status, when click the erase button
-    drawMode = state;
+    drawActive = state;
 }
 
 void drawingCanvas::fillMode(bool state) {
@@ -109,8 +207,16 @@ void drawingCanvas::colorChange(QColor newColor)
 
 // draw colors on the grids
 void drawingCanvas::drawOnGrid(const QPoint &position) {
-    //find the view coordinate corresponding to the mouse location
     QPointF scenePoint = mapToScene(position);
+    int gridX = static_cast<int>(floor(scenePoint.x() / scaleFactor));
+    int gridY = static_cast<int>(floor(scenePoint.y() / scaleFactor));
+    QPoint gridPos(gridX, gridY);
+
+    QColor currentColor = Qt::transparent;
+    colorState[gridPos] = currentColor; // Update the visible drawing state
+
+    // Also update the full-resolution drawing state
+    fullResolutionDrawingState[gridPos] = currentColor;
 
     //find the current the grid we chosed and change its color
     QGraphicsRectItem *currentGrid = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
@@ -129,8 +235,7 @@ void drawingCanvas::drawOnGrid(const QPoint &position) {
     }
 }
 
-void drawingCanvas::fillBucket(QPointF scenePoint, int scaleX, int scaleY)
-{
+void drawingCanvas::fillBucket(QPointF scenePoint, double scaleX, double scaleY) {
     // Select the square above/below or left/right to check and then fill if passes the checks
     scenePoint.setX(scenePoint.x() + scaleX);
     scenePoint.setY(scenePoint.y() + scaleY);
@@ -159,37 +264,103 @@ void drawingCanvas::fillBucket(QPointF scenePoint, int scaleX, int scaleY)
     fillBucket(scenePoint, 0, -scaleFactor);
 }
 
-void drawingCanvas::saveDrawing(const QString &filePath) {
-    QJsonArray jsonArray;
+//getting the drawing area scene for copying to preview window
+QGraphicsScene* drawingCanvas::getScene() {
+    return scene;
+}
 
-    scaleFactor = this->width() / gridDimension;
-
-    //Get every pixel color
-    for (int x = 0; x < gridDimension; x++) {
-        QJsonArray rowArray;
-        for (int y = 0; y < gridDimension; y++) {
-            QPointF scenePoint = mapToScene(QPoint(x * scaleFactor + scaleFactor / 2, y * scaleFactor + scaleFactor / 2));
-            QGraphicsRectItem *item = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
-
-            QColor color = item ? item->brush().color() : Qt::transparent;
-            QString colorStr = color.name(QColor::HexArgb);
-            rowArray.append(colorStr);
+// just clean the grids
+void drawingCanvas::cleanGrids() {
+    for (auto &item : scene->items()) {
+        QGraphicsRectItem *rect = qgraphicsitem_cast<QGraphicsRectItem*>(item);
+        if (rect) {
+            rect->setBrush(QBrush(Qt::transparent));
         }
-        jsonArray.append(rowArray);
+    }
+}
+void drawingCanvas::addNewFrame() {
+    cleanGrids();
+    currentFrameIndex ++;
+}
+
+void drawingCanvas::clear(){
+    scene->clear();
+    drawGrid();
+}
+
+void drawingCanvas::movePixels(QPointF delta)
+{
+    int dx = delta.x() / scaleFactor;
+    int dy = delta.y() / scaleFactor;
+
+    QVector<QVector<QColor>> newGridColors(gridDimension, QVector<QColor>(gridDimension, Qt::transparent));
+    // Move colors to new positions
+    for (int y = 0; y < gridDimension; y++) {
+        for (int x = 0; x < gridDimension; x++) {
+            int newX = (x + dx);
+            int newY = (y + dy);
+            if (newX >= 0 && newY >= 0 && newX < gridDimension && newY < gridDimension) {
+                QGraphicsItem *item = scene->itemAt(x * scaleFactor, y * scaleFactor, QTransform());
+                QGraphicsRectItem *rectItem = qgraphicsitem_cast<QGraphicsRectItem*>(item);
+                if (rectItem) {
+                    newGridColors[newY][newX] = rectItem->brush().color();
+                }
+            }
+        }
     }
 
-    //Name it
-    QJsonObject jsonObject;
-    jsonObject["grid"] = jsonArray;
+    // Update grid colors
+    for (int y = 0; y < gridDimension; y++) {
+        for (int x = 0; x < gridDimension; x++) {
+            QGraphicsItem *item = scene->itemAt(x * scaleFactor, y * scaleFactor, QTransform());
+            QGraphicsRectItem *rectItem = qgraphicsitem_cast<QGraphicsRectItem*>(item);
+            if (rectItem) {
+                rectItem->setBrush(QBrush(newGridColors[y][x]));
+            }
+        }
+    }
+}
 
-    //Save it to the chose file
+void drawingCanvas::saveDrawing(const QString &filePath) {
+    QJsonArray framesArray;
+    scaleFactor = this->width() / gridDimension;
+
+    for (auto it = frames.begin(); it != frames.end(); ++it) {
+        scene = it.value();
+        QJsonArray gridArray;
+
+        for (int x = 0; x < gridDimension; x++) {
+            QJsonArray rowArray;
+            for (int y = 0; y < gridDimension; y++) {
+                QPointF scenePoint = mapToScene(QPoint(x * scaleFactor + scaleFactor / 2, y * scaleFactor + scaleFactor / 2));
+                QGraphicsRectItem *item = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
+
+                QColor color = item ? item->brush().color() : Qt::transparent;
+                QString colorStr = QString::number(color.red()) + "," + QString::number(color.green()) + "," + QString::number(color.blue()) + "," + QString::number(color.alpha());
+                rowArray.append(colorStr);
+            }
+            gridArray.append(rowArray);
+        }
+
+        QJsonObject frameObject;
+        frameObject["grid"] = gridArray;
+        framesArray.append(frameObject);
+    }
+
+    QJsonObject jsonObject;
+    jsonObject["frames"] = framesArray;
+    jsonObject["gridDimension"] = gridDimension;
+
     QFile file(filePath);
     if (file.open(QIODevice::WriteOnly)) {
         QJsonDocument doc(jsonObject);
         file.write(doc.toJson());
         file.close();
     }
+
+    scene = frames.value(currentFrameIndex);
 }
+
 
 void drawingCanvas::loadDrawing(const QString &filePath) {
     QFile file(filePath);
@@ -199,27 +370,58 @@ void drawingCanvas::loadDrawing(const QString &filePath) {
 
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     QJsonObject jsonObject = doc.object();
-    QJsonArray gridArray = jsonObject["grid"].toArray();
+
+    gridDimension = jsonObject["gridDimension"].toInt();
+    QJsonArray framesArray = jsonObject["frames"].toArray();
+
+    gridSizeChanged(gridDimension);
 
     scaleFactor = this->width() / gridDimension;
 
-    //Read every grid
-    for (int x = 0; x < gridArray.size(); ++x) {
-        QJsonArray rowArray = gridArray[x].toArray();
-        for (int y = 0; y < rowArray.size(); ++y) {
-            QColor color(rowArray[y].toString());
-            QPointF scenePoint = mapToScene(QPoint(x * scaleFactor, y * scaleFactor));
-            QGraphicsRectItem *item = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
+    for (auto &scene : frames) {
+        delete scene;
+    }
+    frames.clear();
+    currentFrameIndex = 0;
+    numberOfFrames = -1;
+    emit cleanFrame();
 
-            if (item) {
-                item->setBrush(QBrush(color));
-            } else {
-                QPen pen(Qt::gray);
-                pen.setWidth(0);
-                scene->addRect(x * scaleFactor, y * scaleFactor, scaleFactor, scaleFactor, pen, QBrush(color));
+    for (const QJsonValue &frameVal : framesArray) {
+        numberOfFrames++;
+        QGraphicsScene* newScene = new QGraphicsScene(this);
+
+        QJsonObject frameObject = frameVal.toObject();
+        QJsonArray gridArray = frameObject["grid"].toArray();
+
+        for (int x = 0; x < gridArray.size(); ++x) {
+            QJsonArray rowArray = gridArray[x].toArray();
+            for (int y = 0; y < rowArray.size(); ++y) {
+                QStringList rgba = rowArray[y].toString().split(",");
+                if (rgba.size() == 4) {
+                    QColor color(rgba[0].toInt(), rgba[1].toInt(), rgba[2].toInt(), rgba[3].toInt());
+                    QGraphicsRectItem *item = new QGraphicsRectItem(x * scaleFactor, y * scaleFactor, scaleFactor, scaleFactor);
+                    item->setBrush(QBrush(color));
+                    newScene->addItem(item);
+                }
             }
         }
+
+        frames.insert(numberOfFrames, newScene);
+        if(currentFrameIndex != 0){
+            emit addFrame();
+        } else {
+            this->setScene(frames.value(0));
+            scene = frames.value(0);
+        }
+
+        emit drawingFinish(currentFrameIndex);
+        currentFrameIndex++;
     }
 
     file.close();
+
+    if (!frames.isEmpty()) {
+        scene = frames.value(0);
+        currentFrameIndex = 0;
+    }
 }
