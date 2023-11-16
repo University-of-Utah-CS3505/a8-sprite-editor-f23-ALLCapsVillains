@@ -35,17 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
     QAction *clear = menu->addAction("Clear");
 
     ui->addFrame->setDisabled(true);
-    //ui->deleteFrame->setDisabled();
-
-    menu->addAction("Save As");
-
-
-    menu=menuBar()->addMenu("Presets");
-    menu->addAction("Insert Preset 1");
-    menu->addAction("Insert Preset 2");
-    menu->addAction("Insert Preset 3");
-    menu->addAction("Insert Preset 4");
-    menu->addAction("Insert Preset 5");
+    ui->deleteFrame->setDisabled(true);
 
     menu=menuBar()->addMenu("Theme");
 
@@ -53,6 +43,10 @@ MainWindow::MainWindow(QWidget *parent)
     QAction* rojo = menu->addAction("Rojo");
     QAction* sky = menu->addAction("Sky");
     QAction* mocha = menu->addAction("Mocha");
+
+//    ui->scrollArea->ho
+
+//    ui->scrollArea->horizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
 
     connect(ui->gridSizeSldr, &QSlider::valueChanged, this, &MainWindow::changeGridSize);
@@ -77,13 +71,13 @@ MainWindow::MainWindow(QWidget *parent)
     ui->selection->setIcon(handIcon);
 
     ui->colorBtn->setStyleSheet("background-color: black"); // default color to black
-    ui->colorborder->setStyleSheet("background-color: white");
+    //ui->colorborder->setStyleSheet("background-color: white");
     connect(ui->erase, &QPushButton::clicked, this, &MainWindow::eraseButtonClicked);
     connect(ui->draw, &QPushButton::clicked, this, &MainWindow::drawButtonClicked);
     connect(ui->fill, &QPushButton::clicked, this, &MainWindow::fillButtonClicked);
     connect(ui->colorBtn, &QPushButton::clicked, this, &MainWindow::colorButtonClicked);
     connect(ui->selection, &QPushButton::clicked, this, &MainWindow::selectionButtonClicked);
-    connect(ui->cursor, &QPushButton::clicked, this, &MainWindow::cursorButtonClicked);
+    //connect(ui->cursor, &QPushButton::clicked, this, &MainWindow::cursorButtonClicked);
 
 
     //when the drawing is finished, the preview window will show the scene
@@ -105,6 +99,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mocha, &QAction::triggered, this,&MainWindow::mochaTheme);
     connect(sky, &QAction::triggered, this, &MainWindow::skyTheme);
     firstFPS = true;
+
+    connect(ui->graphicsCanvas, &drawingCanvas::cleanFrame, this, &MainWindow::cleamFrame);
+    connect(ui->graphicsCanvas, &drawingCanvas::addFrame, this, &MainWindow::addFrame);
 }
 
 MainWindow::~MainWindow(){
@@ -120,10 +117,11 @@ void MainWindow::changeGridSize(){
 }
 
 void MainWindow::eraseButtonClicked(){
-    QPixmap eraserMap(":/eraser.png");
-    eraserMap.setDevicePixelRatio(24);
-    QCursor c = QCursor(eraserMap, 0, 0);
-    setCursor(c);
+    QPixmap iconMap(":/eraser.png");
+    QIcon icon(iconMap);
+    ui->currentTool->setIcon(icon);
+
+
     //calling the Eraserchange method for change the earser's status.
     //Active to be not active, or reverse.
     ui->graphicsCanvas->drawingMode(true);
@@ -133,10 +131,9 @@ void MainWindow::eraseButtonClicked(){
 }
 
 void MainWindow::drawButtonClicked(){
-    QPixmap penMap(":/pen.png");
-    penMap.setDevicePixelRatio(24);
-    QCursor c = QCursor(penMap, 0, 0);
-    setCursor(c);
+    QPixmap iconMap(":/pen.png");
+    QIcon icon(iconMap);
+    ui->currentTool->setIcon(icon);
     ui->graphicsCanvas->drawingMode(true);
     ui->graphicsCanvas->fillMode(false);
     ui->graphicsCanvas->Eraserchange(false);
@@ -145,10 +142,9 @@ void MainWindow::drawButtonClicked(){
 
 void MainWindow::fillButtonClicked()
 {
-    QPixmap fillBucketMap(":/fillBucket.png");
-    fillBucketMap.setDevicePixelRatio(18);
-    QCursor c = QCursor(fillBucketMap, 0, 0);
-    setCursor(c);
+    QPixmap iconMap(":/fillBucket.png");
+    QIcon icon(iconMap);
+    ui->currentTool->setIcon(icon);
     ui->graphicsCanvas->drawingMode(false);
     ui->graphicsCanvas->fillMode(true);
     ui->graphicsCanvas->selectionMode(false);
@@ -167,10 +163,9 @@ void MainWindow::colorButtonClicked(){
 }
 
 void MainWindow::selectionButtonClicked(){
-    QPixmap handMap(":/hand.png");
-    handMap.setDevicePixelRatio(18);
-    QCursor c = QCursor(handMap, 0, 0);
-    setCursor(c);
+    QPixmap iconMap(":/hand.png");
+    QIcon icon(iconMap);
+    ui->currentTool->setIcon(icon);
     ui->graphicsCanvas->drawingMode(false);
     ui->graphicsCanvas->fillMode(false);
     ui->graphicsCanvas->selectionMode(true);
@@ -188,36 +183,37 @@ void MainWindow::cursorButtonClicked()
 
 void MainWindow::clearPage(){
     ui->graphicsCanvas->clear();
-
 }
 
 
-void MainWindow::saveDrawing(){
-    QString filePath = QFileDialog::getSaveFileName(this, tr("Save Drawing"), "", tr("JSON Files (*.json)"));
+void MainWindow::saveDrawing() {
+    QString filePath = QFileDialog::getSaveFileName(this, tr("Save Drawing"), "", tr("Sprite Sheet Project Files (*.ssp)"));
     if (!filePath.isEmpty()) {
         ui->graphicsCanvas->saveDrawing(filePath);
     }
 }
 
-void MainWindow::loadDrawing(){
-    QString filePath = QFileDialog::getOpenFileName(this, tr("Open Drawing"), "", tr("JSON Files (*.json)"));
+void MainWindow::loadDrawing() {
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Open Drawing"), "", tr("Sprite Sheet Project Files (*.ssp)"));
     if (!filePath.isEmpty()) {
         ui->graphicsCanvas->loadDrawing(filePath);
     }
-
 }
+
 void MainWindow::rojoTheme(){
     ui->centralwidget->setStyleSheet("background-color: rgb(212, 71, 61)");
     ui->scrollArea->setStyleSheet("background-color: rgb(255,255,255)");
     ui->draw->setStyleSheet("background-color: rgb(245, 127, 213)");
     ui->erase->setStyleSheet("background-color: rgb(245, 127, 213)");
     ui->fill->setStyleSheet("background-color: rgb(245, 127, 213)");
-    ui->cursor->setStyleSheet("background-color: rgb(245, 127, 213)");
+    //ui->cursor->setStyleSheet("background-color: rgb(245, 127, 213)");
     ui->selection->setStyleSheet("background-color: rgb(245, 127, 213)");
     ui->addFrame->setStyleSheet("background-color: rgb(245, 127, 213)");
     ui->deleteFrame->setStyleSheet("background-color: rgb(245, 127, 213)");
     ui->previewWindow->setStyleSheet("background-color: rgb(255, 255, 255)");
     ui->graphicsCanvas->setStyleSheet("background-color: rgb(255, 255, 255)");
+    ui->currentTool->setStyleSheet("background-color: rgb(245, 127, 213)");
+    ui->framePicker->setStyleSheet("background-color: rgb(255, 255, 255)");
     QMovie *mov = new QMovie(":/new/logos/rojoooo.gif");
     mov->start();
     mov->setScaledSize(ui->themePic->size());
@@ -234,12 +230,14 @@ void MainWindow::mochaTheme(){
     ui->draw->setStyleSheet("background-color: rgb(219, 209, 156)");
     ui->erase->setStyleSheet("background-color: rgb(219, 209, 156)");
     ui->fill->setStyleSheet("background-color: rgb(219, 209, 156)");
-    ui->cursor->setStyleSheet("background-color: rgb(219, 209, 156)");
+    //ui->cursor->setStyleSheet("background-color: rgb(219, 209, 156)");
     ui->selection->setStyleSheet("background-color: rgb(219, 209, 156)");
     ui->addFrame->setStyleSheet("background-color: rgb(219, 209, 156)");
     ui->deleteFrame->setStyleSheet("background-color: rgb(219, 209, 156)");
     ui->previewWindow->setStyleSheet("background-color: rgb(255, 255, 255)");
     ui->graphicsCanvas->setStyleSheet("background-color: rgb(255, 255, 255)");
+    ui->currentTool->setStyleSheet("background-color: rgb(219, 209, 156)");
+    ui->framePicker->setStyleSheet("background-color: rgb(255, 255, 255)");
     int w = ui->themePic->width();
     int h = ui->themePic->height();
     QPixmap pix(":/cuofeebg.png");
@@ -253,11 +251,14 @@ void MainWindow::darkTheme(){
     ui->erase->setStyleSheet("background-color: rgb(18, 255, 105)");
     ui->fill->setStyleSheet("background-color: rgb(219, 18, 255)");
     ui->selection->setStyleSheet("background-color: rgb(18, 255, 105)");
-    ui->cursor->setStyleSheet("background-color: rgb(18, 255, 105)");
+    //ui->cursor->setStyleSheet("background-color: rgb(18, 255, 105)");
     ui->addFrame->setStyleSheet("background-color: rgb(219, 18, 255)");
     ui->deleteFrame->setStyleSheet("background-color: rgb(18, 255, 105)");
     ui->previewWindow->setStyleSheet("background-color: rgb(255, 255, 255)");
     ui->graphicsCanvas->setStyleSheet("background-color: rgb(255, 255, 255)");
+    ui->currentTool->setStyleSheet("background-color: rgb(219, 18, 255)");
+    ui->framePicker->setStyleSheet("background-color: rgb(255, 255, 255)");
+
     QMovie *mov = new QMovie(":/new/logos/cybaaa.gif");
     mov->start();
     mov->setScaledSize(ui->themePic->size());
@@ -275,11 +276,13 @@ void MainWindow::skyTheme(){
     ui->erase->setStyleSheet("background-color: rgb(255,255,255)");
     ui->fill->setStyleSheet("background-color: rgb(255,255,255)");
     ui->selection->setStyleSheet("background-color: rgb(255,255,255)");
-    ui->cursor->setStyleSheet("background-color: rgb(255,255,255)");
+    //ui->cursor->setStyleSheet("background-color: rgb(255,255,255)");
     ui->addFrame->setStyleSheet("background-color: rgb(255,255,255)");
     ui->deleteFrame->setStyleSheet("background-color: rgb(255,255,255)");
     ui->previewWindow->setStyleSheet("background-color: rgb(255, 255, 255)");
     ui->graphicsCanvas->setStyleSheet("background-color: rgb(255, 255, 255)");
+    ui->currentTool->setStyleSheet("background-color: rgb(255,255,255)");
+    ui->framePicker->setStyleSheet("background-color: rgb(255, 255, 255)");
     QMovie *mov = new QMovie(":/kratoss.gif");
     mov->start();
     mov->setScaledSize(ui->themePic->size());
@@ -306,7 +309,7 @@ void MainWindow::previewWindowUpdate() {
     static int animationIndex = currentFrameIndex; // Static variable to remember the animation frame between timer calls
 
     // Check if the frames list is empty
-    if (!framesViewsList.isEmpty()) {
+    if (!framesViewsList.isEmpty() && animationIndex >= 0 && animationIndex < framesViewsList.count()) {
         // Get the current scene for animation
         QGraphicsScene* currentScene = framesViewsList[animationIndex]->scene();
 
@@ -358,6 +361,9 @@ void MainWindow::frameUpdate(int index) {
             previewAnimationTimer->start(1000);
             ui->fpsLabel->setText("FPS : 1");
             ui->slider->setValue(1);
+            ui->addFrame->setDisabled(false);
+            ui->deleteFrame->setDisabled(false);
+            ui->gridSizeSldr->setDisabled(true);
             firstFPS = false;
         }
     }
@@ -367,6 +373,7 @@ void MainWindow::on_addFrame_clicked(){
     frame++;
     ui->graphicsCanvas->newFrame();
     ui->graphicsCanvas->frameChanged(frame);
+    ui->framePicker->setMaximum(frame);
     ui->framePicker->setValue(frame);
 
 
@@ -390,6 +397,7 @@ void MainWindow::on_addFrame_clicked(){
 
     //add this new frame to the frames list and update current frame index
     framesViewsList.append(newFrameView);
+
 
     //Only has 2 or more frames to start the animation timer
     //    if (framesViewsList.size() == 2) {
@@ -455,5 +463,35 @@ void MainWindow::on_spinBox_valueChanged(int value)
     ui->graphicsCanvas->setScene(scene);
     currentFrameIndex = value;
     frame = value;
+}
+
+// clean the frame number
+void MainWindow::cleamFrame(){
+    while(framesViewsList.size() > 1){
+        on_deleteFrame_clicked();
+    }
+}
+
+void MainWindow::addFrame(){
+    frame ++;
+
+    ui->framePicker->setMaximum(frame);
+
+    // 创建新的 QGraphicsView 作为新的 frame
+    QGraphicsView* newFrameView = new QGraphicsView();
+
+    // 设置新 frame 的大小和场景
+    newFrameView->setFixedSize(ui->frame->size());
+    QGraphicsScene* newFrameScene = new QGraphicsScene(newFrameView);
+    newFrameView->setScene(newFrameScene);
+    newFrameScene->setSceneRect(ui->frame->sceneRect());
+
+    // 将这个新 frame 添加到 UI 的适当位置（例如滚动视图下方）
+    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(ui->scrollAreaWidgetContents->layout());
+    layout->addWidget(newFrameView);
+    newFrameView->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+    // 将新 frame 添加到 frames 列表并更新当前 frame 索引
+    framesViewsList.append(newFrameView);
 }
 

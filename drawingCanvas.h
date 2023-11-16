@@ -91,6 +91,9 @@ signals:
     //for expressing draw has been finished
     void drawingFinish(int currentFrameIndex);
     void updatePreviewWindow();
+    void cleanFrame();
+    void addFrame();
+
 };
 
 #endif // DRAWINGCANVAS_H

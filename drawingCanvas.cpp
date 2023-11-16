@@ -15,6 +15,7 @@ drawingCanvas::drawingCanvas(QWidget *parent) : QGraphicsView(parent) {
     brush = QBrush(Qt::transparent);
 
     currentFrameIndex = 0;
+    frame = 0;
 
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -96,7 +97,7 @@ void drawingCanvas::drawGrid(double newGridDimension) {
             // The cell is visible in the new grid
             visibleDrawingState[QPoint(scaledX, scaledY)] = fullResolutionDrawingState[point];
 
-    QPen pen(Qt::gray);
+    QPen pen(Qt::black);
     pen.setWidth(0);
     QBrush brush(Qt::transparent);
 
@@ -317,36 +318,44 @@ void drawingCanvas::movePixels(QPointF delta)
 }
 
 void drawingCanvas::saveDrawing(const QString &filePath) {
-    QJsonArray jsonArray;
-
+    QJsonArray framesArray;
     scaleFactor = this->width() / gridDimension;
 
-    //Get every pixel color
-    for (int x = 0; x < gridDimension; x++) {
-        QJsonArray rowArray;
-        for (int y = 0; y < gridDimension; y++) {
-            QPointF scenePoint = mapToScene(QPoint(x * scaleFactor + scaleFactor / 2, y * scaleFactor + scaleFactor / 2));
-            QGraphicsRectItem *item = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
+    for (auto it = frames.begin(); it != frames.end(); ++it) {
+        scene = it.value();
+        QJsonArray gridArray;
 
-            QColor color = item ? item->brush().color() : Qt::transparent;
-            QString colorStr = color.name(QColor::HexArgb);
-            rowArray.append(colorStr);
+        for (int x = 0; x < gridDimension; x++) {
+            QJsonArray rowArray;
+            for (int y = 0; y < gridDimension; y++) {
+                QPointF scenePoint = mapToScene(QPoint(x * scaleFactor + scaleFactor / 2, y * scaleFactor + scaleFactor / 2));
+                QGraphicsRectItem *item = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
+
+                QColor color = item ? item->brush().color() : Qt::transparent;
+                QString colorStr = QString::number(color.red()) + "," + QString::number(color.green()) + "," + QString::number(color.blue()) + "," + QString::number(color.alpha());
+                rowArray.append(colorStr);
+            }
+            gridArray.append(rowArray);
         }
-        jsonArray.append(rowArray);
+
+        QJsonObject frameObject;
+        frameObject["grid"] = gridArray;
+        framesArray.append(frameObject);
     }
 
-    //Name it
     QJsonObject jsonObject;
-    jsonObject["grid"] = jsonArray;
+    jsonObject["frames"] = framesArray;
 
-    //Save it to the chose file
     QFile file(filePath);
     if (file.open(QIODevice::WriteOnly)) {
         QJsonDocument doc(jsonObject);
         file.write(doc.toJson());
         file.close();
     }
+
+    scene = frames.value(currentFrameIndex);
 }
+
 
 void drawingCanvas::loadDrawing(const QString &filePath) {
     QFile file(filePath);
@@ -356,28 +365,54 @@ void drawingCanvas::loadDrawing(const QString &filePath) {
 
     QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
     QJsonObject jsonObject = doc.object();
-    QJsonArray gridArray = jsonObject["grid"].toArray();
+    QJsonArray framesArray = jsonObject["frames"].toArray();
 
     scaleFactor = this->width() / gridDimension;
 
-    //Read every grid
-    for (int x = 0; x < gridArray.size(); ++x) {
-        QJsonArray rowArray = gridArray[x].toArray();
-        for (int y = 0; y < rowArray.size(); ++y) {
-            QColor color(rowArray[y].toString());
-            QPointF scenePoint = mapToScene(QPoint(x * scaleFactor, y * scaleFactor));
-            QGraphicsRectItem *item = qgraphicsitem_cast<QGraphicsRectItem*>(scene->itemAt(scenePoint, QTransform()));
+    for (auto &scene : frames) {
+        delete scene;
+    }
+    frames.clear();
+    currentFrameIndex = 0;
+    frame = -1;
+    emit cleanFrame();
 
-            if (item) {
-                item->setBrush(QBrush(color));
-            } else {
-                QPen pen(Qt::gray);
-                pen.setWidth(0);
-                scene->addRect(x * scaleFactor, y * scaleFactor, scaleFactor, scaleFactor, pen, QBrush(color));
+    for (const QJsonValue &frameVal : framesArray) {
+        frame++;
+        QGraphicsScene* newScene = new QGraphicsScene(this);
+
+        QJsonObject frameObject = frameVal.toObject();
+        QJsonArray gridArray = frameObject["grid"].toArray();
+
+        for (int x = 0; x < gridArray.size(); ++x) {
+            QJsonArray rowArray = gridArray[x].toArray();
+            for (int y = 0; y < rowArray.size(); ++y) {
+                QStringList rgba = rowArray[y].toString().split(",");
+                if (rgba.size() == 4) {
+                    QColor color(rgba[0].toInt(), rgba[1].toInt(), rgba[2].toInt(), rgba[3].toInt());
+                    QGraphicsRectItem *item = new QGraphicsRectItem(x * scaleFactor, y * scaleFactor, scaleFactor, scaleFactor);
+                    item->setBrush(QBrush(color));
+                    newScene->addItem(item);
+                }
             }
         }
+
+        frames.insert(frame, newScene);
+        if(currentFrameIndex != 0){
+            emit addFrame();
+        } else {
+            this->setScene(frames.value(0));
+            scene = frames.value(0);
+        }
+
+        emit drawingFinish(currentFrameIndex);
+        currentFrameIndex++;
     }
 
     file.close();
-}
 
+    if (!frames.isEmpty()) {
+        scene = frames.value(0);
+        currentFrameIndex = 0;
+    }
+}

@@ -57,6 +57,9 @@ private slots:
     void on_addFrame_clicked();
     void on_deleteFrame_clicked();
     void on_framePicker_valueChanged(int arg1);
+
+    void cleamFrame();
+    void addFrame();
 };
 
 #endif
