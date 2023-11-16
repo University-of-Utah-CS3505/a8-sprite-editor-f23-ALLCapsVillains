@@ -212,6 +212,7 @@ void MainWindow::rojoTheme(){
     ui->draw->setStyleSheet("background-color: rgb(245, 127, 213)");
     ui->erase->setStyleSheet("background-color: rgb(245, 127, 213)");
     ui->fill->setStyleSheet("background-color: rgb(245, 127, 213)");
+    ui->cursor->setStyleSheet("background-color: rgb(245, 127, 213)");
     ui->selection->setStyleSheet("background-color: rgb(245, 127, 213)");
     ui->addFrame->setStyleSheet("background-color: rgb(245, 127, 213)");
     ui->deleteFrame->setStyleSheet("background-color: rgb(245, 127, 213)");
@@ -233,6 +234,7 @@ void MainWindow::mochaTheme(){
     ui->draw->setStyleSheet("background-color: rgb(219, 209, 156)");
     ui->erase->setStyleSheet("background-color: rgb(219, 209, 156)");
     ui->fill->setStyleSheet("background-color: rgb(219, 209, 156)");
+    ui->cursor->setStyleSheet("background-color: rgb(219, 209, 156)");
     ui->selection->setStyleSheet("background-color: rgb(219, 209, 156)");
     ui->addFrame->setStyleSheet("background-color: rgb(219, 209, 156)");
     ui->deleteFrame->setStyleSheet("background-color: rgb(219, 209, 156)");
@@ -251,6 +253,7 @@ void MainWindow::darkTheme(){
     ui->erase->setStyleSheet("background-color: rgb(18, 255, 105)");
     ui->fill->setStyleSheet("background-color: rgb(219, 18, 255)");
     ui->selection->setStyleSheet("background-color: rgb(18, 255, 105)");
+    ui->cursor->setStyleSheet("background-color: rgb(18, 255, 105)");
     ui->addFrame->setStyleSheet("background-color: rgb(219, 18, 255)");
     ui->deleteFrame->setStyleSheet("background-color: rgb(18, 255, 105)");
     ui->previewWindow->setStyleSheet("background-color: rgb(255, 255, 255)");
@@ -272,6 +275,7 @@ void MainWindow::skyTheme(){
     ui->erase->setStyleSheet("background-color: rgb(255,255,255)");
     ui->fill->setStyleSheet("background-color: rgb(255,255,255)");
     ui->selection->setStyleSheet("background-color: rgb(255,255,255)");
+    ui->cursor->setStyleSheet("background-color: rgb(255,255,255)");
     ui->addFrame->setStyleSheet("background-color: rgb(255,255,255)");
     ui->deleteFrame->setStyleSheet("background-color: rgb(255,255,255)");
     ui->previewWindow->setStyleSheet("background-color: rgb(255, 255, 255)");
