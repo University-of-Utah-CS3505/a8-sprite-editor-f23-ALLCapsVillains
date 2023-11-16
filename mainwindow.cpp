@@ -106,11 +106,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->graphicsCanvas, &drawingCanvas::cleanFrame, this, &MainWindow::cleanFrames);
     connect(ui->graphicsCanvas, &drawingCanvas::addFrame, this, &MainWindow::saveFrame);
-
-    connect(ui->addFrame, &QPushButton::clicked, this, &MainWindow::onAddFrameClicked);
-    connect(ui->deleteFrame, &QPushButton::clicked, this, &MainWindow::onDeleteFrameClicked);
-    connect(ui->framePicker, &QSpinBox::valueChanged, this, &MainWindow::onSpinBoxValueChanged);
-    connect(ui->framePicker, &QSpinBox::valueChanged, this, &MainWindow::onFramePickerValueChange);
 }
 
 MainWindow::~MainWindow(){
@@ -217,7 +212,7 @@ void MainWindow::rojoTheme(){
     ui->graphicsCanvas->setStyleSheet("background-color: rgb(255, 255, 255)");
     ui->currentTool->setStyleSheet("background-color: rgb(245, 127, 213)");
     ui->framePicker->setStyleSheet("background-color: rgb(255, 255, 255)");
-    QMovie *mov = new QMovie(":/new/logos/rojoooo.gif");
+    QMovie *mov = new QMovie(":/rojoooo.gif");
     mov->start();
     mov->setScaledSize(ui->themePic->size());
     ui->themePic->setMovie(mov);
@@ -256,7 +251,7 @@ void MainWindow::darkTheme(){
     ui->currentTool->setStyleSheet("background-color: rgb(219, 18, 255)");
     ui->framePicker->setStyleSheet("background-color: rgb(255, 255, 255)");
 
-    QMovie *mov = new QMovie(":/new/logos/cybaaa.gif");
+    QMovie *mov = new QMovie(":/cybaaa.gif");
     mov->start();
     mov->setScaledSize(ui->themePic->size());
     ui->themePic->setMovie(mov);
@@ -283,7 +278,7 @@ void MainWindow::skyTheme(){
     ui->themePic->setStyleSheet("(QLabel{border-radius: 25px;}");
 }
 
-void MainWindow::onFramePickerValueChange(int arg1){
+void MainWindow::on_framePicker_valueChanged(int arg1){
     if(arg1 >=0 && arg1 <=ui->graphicsCanvas->numberOfFrames)
         ui->graphicsCanvas->framePick(arg1);
     currentFrameIndex = arg1;
@@ -299,8 +294,6 @@ void MainWindow::previewWindowUpdate() {
     if (!framesViewsList.isEmpty() && animationIndex >= 0 && animationIndex < framesViewsList.count()) {
         // Get the current scene for animation
         QGraphicsScene* currentScene = framesViewsList[animationIndex]->scene();
-
-        // ... (The rest of your existing code to set up the pixmap and scene)
 
         // Update the preview window with the new scene
         ui->previewWindow->setScene(currentScene);
@@ -356,7 +349,7 @@ void MainWindow::frameUpdate() {
     }
 }
 
-void MainWindow::onAddFrameClicked(){
+void MainWindow::on_addFrame_clicked(){
     frame++;
     ui->graphicsCanvas->newFrame();
     ui->graphicsCanvas->frameChanged(frame);
@@ -385,15 +378,6 @@ void MainWindow::onAddFrameClicked(){
     //add this new frame to the frames list and update current frame index
     framesViewsList.append(newFrameView);
 
-
-    //Only has 2 or more frames to start the animation timer
-    //    if (framesViewsList.size() == 2) {
-    //        //1 second for each
-    //        previewAnimationTimer->start(1000);
-    //        ui->fpsLabel->setText("FPS : 1");
-    //        ui->slider->setValue(1);
-    //    }
-
 }
 
 void MainWindow::fpsChanged(int fps){
@@ -408,7 +392,7 @@ void MainWindow::fpsChanged(int fps){
 
 }
 
-void MainWindow::onDeleteFrameClicked(){
+void MainWindow::on_deleteFrame_clicked(){
     // can not delete the last frame
     if(framesViewsList.size() <= 1) {
         return;
@@ -443,7 +427,7 @@ void MainWindow::onDeleteFrameClicked(){
     }
 }
 
-void MainWindow::onSpinBoxValueChanged(int value)
+void MainWindow::on_spinBox_valueChanged(int value)
 {
     //ui->graphicsCanvas->setScene(frames[value]);
     QGraphicsScene *scene = frames[value];
@@ -455,7 +439,7 @@ void MainWindow::onSpinBoxValueChanged(int value)
 // clean the frame number
 void MainWindow::cleanFrames(){
     while(framesViewsList.size() > 1){
-        onDeleteFrameClicked();
+        on_deleteFrame_clicked();
     }
 }
 
@@ -481,4 +465,3 @@ void MainWindow::saveFrame(){
     // 将新 frame 添加到 frames 列表并更新当前 frame 索引
     framesViewsList.append(newFrameView);
 }
-
