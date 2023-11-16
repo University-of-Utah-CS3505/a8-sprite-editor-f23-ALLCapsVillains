@@ -132,26 +132,26 @@ private slots:
     void cursorButtonClicked();
 
     /*!
-     * \brief on_spinBox_valueChanged Handles the event when the value of the spin box changes
-     * \param arg1 The new value of the spin box
+     * \brief onSpinBoxValueChanged Handles the event when the value of the spin box changes
+     * \param value The new value of the spin box
      */
-    void on_spinBox_valueChanged(int arg1);
+    void onSpinBoxValueChanged(int value);
 
     /*!
-     * \brief on_addFrame_clicked Handles the event when the add frame button is clicked
+     * \brief onAddFrameClicked Handles the event when the add frame button is clicked
      */
-    void on_addFrame_clicked();
+    void onAddFrameClicked();
 
     /*!
-     * \brief on_deleteFrame_clicked Handles the event when the delete frame button is clicked
+     * \brief onDeleteFrameClicked Handles the event when the delete frame button is clicked
      */
-    void on_deleteFrame_clicked();
+    void onDeleteFrameClicked();
 
     /*!
-     * \brief on_framePicker_valueChanged Handles the event when the value of the frame picker changes
-     * \param arg1 The new value of the frame picker
+     * \brief onFramePickerValueChanged Handles the event when the value of the frame picker changes
+     * \param value The new value of the frame picker
      */
-    void on_framePicker_valueChanged(int arg1);
+    void onFramePickerValueChange(int value);
 
     /*!
      * \brief saveDrawing Saves the current drawing

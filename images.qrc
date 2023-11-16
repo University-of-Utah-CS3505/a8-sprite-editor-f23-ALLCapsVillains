@@ -1,11 +1,4 @@
 <RCC>
-    <qresource prefix="/new/logos">
-        <file>punkkkkk.jpg</file>
-        <file>heartiee-removebg-preview.png</file>
-        <file>cloudyy-removebg-preview.png</file>
-        <file>rojoooo.gif</file>
-        <file>cybaaa.gif</file>
-    </qresource>
     <qresource prefix="/">
         <file>fillBucket.png</file>
         <file>eraser.png</file>

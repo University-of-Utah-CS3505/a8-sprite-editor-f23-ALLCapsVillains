@@ -106,6 +106,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->graphicsCanvas, &drawingCanvas::cleanFrame, this, &MainWindow::cleanFrames);
     connect(ui->graphicsCanvas, &drawingCanvas::addFrame, this, &MainWindow::saveFrame);
+
+    connect(ui->addFrame, &QPushButton::clicked, this, &MainWindow::onAddFrameClicked);
+    connect(ui->deleteFrame, &QPushButton::clicked, this, &MainWindow::onDeleteFrameClicked);
+    connect(ui->framePicker, &QSpinBox::valueChanged, this, &MainWindow::onSpinBoxValueChanged);
+    connect(ui->framePicker, &QSpinBox::valueChanged, this, &MainWindow::onFramePickerValueChange);
 }
 
 MainWindow::~MainWindow(){
@@ -278,7 +283,7 @@ void MainWindow::skyTheme(){
     ui->themePic->setStyleSheet("(QLabel{border-radius: 25px;}");
 }
 
-void MainWindow::on_framePicker_valueChanged(int arg1){
+void MainWindow::onFramePickerValueChange(int arg1){
     if(arg1 >=0 && arg1 <=ui->graphicsCanvas->numberOfFrames)
         ui->graphicsCanvas->framePick(arg1);
     currentFrameIndex = arg1;
@@ -351,7 +356,7 @@ void MainWindow::frameUpdate() {
     }
 }
 
-void MainWindow::on_addFrame_clicked(){
+void MainWindow::onAddFrameClicked(){
     frame++;
     ui->graphicsCanvas->newFrame();
     ui->graphicsCanvas->frameChanged(frame);
@@ -403,7 +408,7 @@ void MainWindow::fpsChanged(int fps){
 
 }
 
-void MainWindow::on_deleteFrame_clicked(){
+void MainWindow::onDeleteFrameClicked(){
     // can not delete the last frame
     if(framesViewsList.size() <= 1) {
         return;
@@ -438,7 +443,7 @@ void MainWindow::on_deleteFrame_clicked(){
     }
 }
 
-void MainWindow::on_spinBox_valueChanged(int value)
+void MainWindow::onSpinBoxValueChanged(int value)
 {
     //ui->graphicsCanvas->setScene(frames[value]);
     QGraphicsScene *scene = frames[value];
@@ -450,7 +455,7 @@ void MainWindow::on_spinBox_valueChanged(int value)
 // clean the frame number
 void MainWindow::cleanFrames(){
     while(framesViewsList.size() > 1){
-        on_deleteFrame_clicked();
+        onDeleteFrameClicked();
     }
 }
 
